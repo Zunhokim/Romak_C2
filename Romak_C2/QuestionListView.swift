@@ -18,7 +18,7 @@ struct QuestionListView: View {
             VStack {
                 Spacer()
             }
-            .navigationTitle("전체 질문 목록")
+            .navigationTitle("All Question List")
         }
     }
 }

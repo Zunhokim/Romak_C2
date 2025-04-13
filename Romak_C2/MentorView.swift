@@ -18,7 +18,7 @@ struct MentorView: View {
             VStack {
                 Spacer()
             }
-            .navigationTitle("멘토 모드")
+            .navigationTitle("Mentor Mode")
         }
     }
 }

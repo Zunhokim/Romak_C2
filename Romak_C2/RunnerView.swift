@@ -18,7 +18,7 @@ struct RunnerView: View {
             VStack {
                 Spacer()
             }
-            .navigationTitle("러너 모드")
+            .navigationTitle("Runner Mode")
         }
     }
 }
