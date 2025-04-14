@@ -13,5 +13,6 @@ struct Romak_C2App: App {
         WindowGroup {
             ContentView()
         }
+        .modelContainer(for: Question.self) // SwiftData 컨테이너 등록
     }
 }
