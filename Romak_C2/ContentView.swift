@@ -9,42 +9,45 @@ import SwiftUI
 
 struct  ContentView: View {
     var body: some View {
-        ZStack {
-            
-            Image("HomeBG")
-                .resizable()
-                .scaledToFill()
-                .ignoresSafeArea()
-            
-            VStack {
-                Spacer()
+        NavigationStack {
+            ZStack {
                 
-                // 가운데 정사각형 멘토/러너 버튼 가로 배치
-                HStack(spacing: 20) {
-                    // 멘토 모드 버튼
-                    NavigationLink(destination: MentorView()) {
-                        SquareButton(title: "Mentor", color: Color(hex: "#FBF6A4"))
+                Image("HomeBG")
+                    .resizable()
+                    .scaledToFill()
+                    .ignoresSafeArea()
+                    .allowsHitTesting(false) // 터치 이벤트 무시
+                
+                VStack {
+                    Spacer()
+                    
+                    // 가운데 정사각형 멘토/러너 버튼 가로 배치
+                    HStack(spacing: 20) {
+                        // 멘토 모드 버튼
+                        NavigationLink(destination: MentorView()) {
+                            SquareButton(title: "Mentor", color: Color(hex: "#FBF6A4"))
+                        }
+                        
+                        // 러너 모드 버튼
+                        NavigationLink(destination: RunnerView()) {
+                            SquareButton(title: "Learner", color: Color(hex: "#F08484"))
+                        }
                     }
                     
-                    // 러너 모드 버튼
-                    NavigationLink(destination: RunnerView()) {
-                        SquareButton(title: "Learner", color: Color(hex: "#F08484"))
+                    Spacer()
+                    
+                    // 하단 텍스트 버튼
+                    NavigationLink(destination: QuestionListView()) {
+                        Text("Show All Questions")
+                            .font(.footnote)
+                            .foregroundColor(.gray)
+                            .underline()
+                            .padding(.bottom, 40)
                     }
-                }
-                
-                Spacer()
-                
-                // 하단 텍스트 버튼
-                NavigationLink(destination: QuestionListView()) {
-                    Text("Show All Questions")
-                        .font(.footnote)
-                        .foregroundColor(.gray)
-                        .underline()
-                        .padding(.bottom, 40)
                 }
             }
         }
-        
+        .navigationBarHidden(true)
     }
 }
 
@@ -60,7 +63,9 @@ struct SquareButton: View {
             
             Text(title)
                 .font(.headline)
+                .foregroundColor(.white)
         }
+        .contentShape(Rectangle())
     }
 }
 

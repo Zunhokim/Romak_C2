@@ -9,22 +9,19 @@ import SwiftUI
 
 struct RunnerView: View {
     var body: some View {
-        ZStack{
-            Image("PageBG")
-                .resizable()
-                .scaledToFill()
-                .ignoresSafeArea()
-            
-            VStack {
-                Spacer()
+        NavigationStack {
+            ZStack{
+                Image("PageBG")
+                    .resizable()
+                    .scaledToFill()
+                    .ignoresSafeArea()
+                    .allowsHitTesting(false) // 터치 이벤트 무시
+                
+                VStack {
+                    Spacer()
+                }
+                .navigationTitle("Runner Mode")
             }
-            .navigationTitle("Runner Mode")
         }
-    }
-}
-
-#Preview {
-    NavigationView {
-        RunnerView()
     }
 }
