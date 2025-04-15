@@ -15,7 +15,7 @@ struct MentorView: View {
     var mentorQuestions: [Question] {
         allQuestions.filter { $0.mode == .mentor }
     }
-    
+
     var currentQuestion: Question? {
         let total = mentorQuestions.count
         guard total > 0, currentIndex < total else { return nil }
@@ -26,6 +26,7 @@ struct MentorView: View {
     @State private var isShowingAddPopup = false
     @State private var isEditing = false
     @State private var newQuestionContent = ""
+    @State private var showRatedMessage = false
 
     var body: some View {
         let total = mentorQuestions.count
@@ -40,50 +41,61 @@ struct MentorView: View {
             VStack(spacing: 24) {
                 Spacer()
 
-                // 질문 인덱스 표시
                 if total > 0 {
                     Text("\(currentIndex + 1) / \(total)")
                         .font(.headline)
                         .foregroundColor(.black)
+                        .multilineTextAlignment(.center)
                 }
 
                 Text("Question!")
                     .font(.title)
                     .bold()
                     .foregroundColor(.black)
+                    .frame(maxWidth: .infinity, alignment: .leading)
 
                 if let question = currentQuestion {
                     Text(question.content)
                         .font(.title2)
-                        .multilineTextAlignment(.center)
-                        .padding()
                         .foregroundColor(.black)
-                        .padding(.horizontal)
+                        .multilineTextAlignment(.leading)
+                        .frame(maxWidth: .infinity, alignment: .leading)
                 } else {
                     Text("질문이 없습니다.")
                         .foregroundColor(.black)
                 }
+                
+                Spacer()
 
-                // 별점 + 수치
+                // 별점 + 평균 + 평가 완료 메시지
                 if let question = currentQuestion {
                     VStack(spacing: 8) {
                         HStack(spacing: 4) {
-                            ForEach(0..<5) { i in
-                                Image(systemName: i < Int(question.rating.rounded()) ? "star.fill" : "star")
+                            ForEach(1...5, id: \.self) { i in
+                                Image(systemName: i <= Int(question.averageRating.rounded()) ? "star.fill" : "star")
                                     .foregroundColor(.yellow)
+                                    .onTapGesture {
+                                        submitRating(i)
+                                    }
                             }
                         }
                         .font(.title2)
 
-                        Text("\(question.rating, specifier: "%.1f")점")
+                        Text("\(question.averageRating, specifier: "%.1f")점")
                             .font(.subheadline)
                             .foregroundColor(.black)
+
+                        if showRatedMessage {
+                            Text("평가 완료!")
+                                .font(.caption)
+                                .foregroundColor(.green)
+                        }
                     }
                 }
 
                 Spacer()
 
-                // 순환형 이동 버튼
+                // 이동 버튼
                 HStack(spacing: 40) {
                     Button(action: {
                         currentIndex = (currentIndex - 1 + total) % total
@@ -110,9 +122,8 @@ struct MentorView: View {
 
                 Spacer()
 
-                // 좌우 하단 버튼 (수정/삭제)
+                // 수정 / 삭제
                 HStack {
-                    // 수정 버튼
                     Button(action: {
                         if let q = currentQuestion {
                             newQuestionContent = q.content
@@ -122,24 +133,22 @@ struct MentorView: View {
                         Image(systemName: "pencil")
                             .font(.title2)
                             .padding()
-                            .background(Color.black.opacity(0.8))
                             .clipShape(Circle())
                     }
 
                     Spacer()
 
-                    // 삭제 버튼
                     Button(action: deleteCurrentQuestion) {
                         Image(systemName: "trash")
                             .font(.title2)
                             .padding()
-                            .background(Color.black.opacity(0.8))
                             .clipShape(Circle())
                     }
                 }
                 .padding(.horizontal)
+                .padding(.bottom, 60)
             }
-            .padding(.bottom, 60)
+            .padding()
         }
         .navigationTitle("Mentor Mode")
         .toolbar {
@@ -149,7 +158,6 @@ struct MentorView: View {
                 }
             }
         }
-        // 추가/수정 팝업
         .sheet(isPresented: Binding(get: {
             isShowingAddPopup || isEditing
         }, set: { newValue in
@@ -190,8 +198,19 @@ struct MentorView: View {
         }
     }
 
-    // MARK: - CRUD 함수
+    // MARK: - 별점 평가
+    private func submitRating(_ stars: Int) {
+        guard let question = currentQuestion else { return }
+        question.ratingHistory.append(Double(stars))
+        try? context.save()
 
+        showRatedMessage = true
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+            showRatedMessage = false
+        }
+    }
+
+    // MARK: - CRUD
     private func addQuestion() {
         guard !newQuestionContent.trimmingCharacters(in: .whitespaces).isEmpty else { return }
 
@@ -199,13 +218,12 @@ struct MentorView: View {
             id: Int.random(in: 1000...9999),
             mode: .mentor,
             content: newQuestionContent,
-            rating: 0.0
+            ratingHistory: []
         )
 
         context.insert(new)
         try? context.save()
         newQuestionContent = ""
-
         currentIndex = mentorQuestions.count - 1
     }
 
@@ -214,8 +232,6 @@ struct MentorView: View {
 
         context.delete(question)
         try? context.save()
-
-        // 현재 인덱스가 삭제 후 유효한 범위로 조정
         currentIndex = max(0, min(currentIndex, mentorQuestions.count - 2))
     }
 

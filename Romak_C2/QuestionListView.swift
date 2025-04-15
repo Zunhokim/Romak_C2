@@ -12,15 +12,13 @@ struct QuestionListView: View {
     @Query private var allQuestions: [Question] // 전체 질문 가져오기
 
     var body: some View {
-        
         NavigationStack {
-            
             ZStack {
                 Image("PageBG")
                     .resizable()
                     .scaledToFill()
                     .ignoresSafeArea()
-                    .allowsHitTesting(false) // 터치 이벤트 무시
+                    .allowsHitTesting(false)
 
                 VStack {
                     if allQuestions.isEmpty {
@@ -29,8 +27,11 @@ struct QuestionListView: View {
                             .font(.title3)
                             .padding()
                     } else {
+                        // 🔧 정렬 미리 분리
+                        let sortedQuestions = allQuestions.sorted { $0.dateAdded > $1.dateAdded }
+
                         List {
-                            ForEach(allQuestions.sorted(by: { $0.dateAdded > $1.dateAdded })) { question in
+                            ForEach(sortedQuestions) { question in
                                 VStack(alignment: .leading, spacing: 4) {
                                     Text(question.content)
                                         .font(.headline)
@@ -40,7 +41,7 @@ struct QuestionListView: View {
                                         .font(.subheadline)
                                         .foregroundColor(.secondary)
 
-                                    Text("⭐️ \(question.rating, specifier: "%.1f")")
+                                    Text("⭐️ \(question.averageRating, specifier: "%.1f")")
                                         .font(.subheadline)
                                         .foregroundColor(.secondary)
                                 }
