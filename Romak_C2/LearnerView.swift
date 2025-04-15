@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct RunnerView: View {
+struct LearnerView: View {
     var body: some View {
         NavigationStack {
             ZStack{
@@ -20,7 +20,7 @@ struct RunnerView: View {
                 VStack {
                     Spacer()
                 }
-                .navigationTitle("Runner Mode")
+                .navigationTitle("Learner Mode")
             }
         }
     }

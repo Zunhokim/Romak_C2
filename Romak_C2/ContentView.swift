@@ -29,7 +29,7 @@ struct  ContentView: View {
                         }
                         
                         // 러너 모드 버튼
-                        NavigationLink(destination: RunnerView()) {
+                        NavigationLink(destination: LearnerView()) {
                             SquareButton(title: "Learner", color: Color(hex: "#F08484"))
                         }
                     }
