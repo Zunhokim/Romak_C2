@@ -11,18 +11,24 @@ import SwiftData
 struct MentorView: View {
     @Environment(\.modelContext) private var context
     @Query private var allQuestions: [Question]
-    
+
     var mentorQuestions: [Question] {
         allQuestions.filter { $0.mode == .mentor }
+    }
+    
+    var currentQuestion: Question? {
+        let total = mentorQuestions.count
+        guard total > 0, currentIndex < total else { return nil }
+        return mentorQuestions[currentIndex]
     }
 
     @State private var currentIndex: Int = 0
     @State private var isShowingAddPopup = false
+    @State private var isEditing = false
     @State private var newQuestionContent = ""
 
     var body: some View {
         let total = mentorQuestions.count
-        let currentQuestion = total > 0 ? mentorQuestions[currentIndex] : nil
 
         ZStack {
             Image("PageBG")
@@ -34,7 +40,7 @@ struct MentorView: View {
             VStack(spacing: 24) {
                 Spacer()
 
-                // 질문 번호
+                // 질문 인덱스 표시
                 if total > 0 {
                     Text("\(currentIndex + 1) / \(total)")
                         .font(.headline)
@@ -77,7 +83,7 @@ struct MentorView: View {
 
                 Spacer()
 
-                // 순환형 버튼
+                // 순환형 이동 버튼
                 HStack(spacing: 40) {
                     Button(action: {
                         currentIndex = (currentIndex - 1 + total) % total
@@ -101,11 +107,39 @@ struct MentorView: View {
                             .cornerRadius(12)
                     }
                 }
-                .padding(.bottom, 40)
-                
+
                 Spacer()
+
+                // 좌우 하단 버튼 (수정/삭제)
+                HStack {
+                    // 수정 버튼
+                    Button(action: {
+                        if let q = currentQuestion {
+                            newQuestionContent = q.content
+                            isEditing = true
+                        }
+                    }) {
+                        Image(systemName: "pencil")
+                            .font(.title2)
+                            .padding()
+                            .background(Color.black.opacity(0.8))
+                            .clipShape(Circle())
+                    }
+
+                    Spacer()
+
+                    // 삭제 버튼
+                    Button(action: deleteCurrentQuestion) {
+                        Image(systemName: "trash")
+                            .font(.title2)
+                            .padding()
+                            .background(Color.black.opacity(0.8))
+                            .clipShape(Circle())
+                    }
+                }
+                .padding(.horizontal)
             }
-            .padding()
+            .padding(.bottom, 60)
         }
         .navigationTitle("Mentor Mode")
         .toolbar {
@@ -115,10 +149,18 @@ struct MentorView: View {
                 }
             }
         }
-        // 커스텀 팝업
-        .sheet(isPresented: $isShowingAddPopup) {
+        // 추가/수정 팝업
+        .sheet(isPresented: Binding(get: {
+            isShowingAddPopup || isEditing
+        }, set: { newValue in
+            if !newValue {
+                isShowingAddPopup = false
+                isEditing = false
+                newQuestionContent = ""
+            }
+        })) {
             VStack(spacing: 20) {
-                Text("새 질문 추가")
+                Text(isEditing ? "질문 수정" : "새 질문 추가")
                     .font(.headline)
 
                 TextField("질문 내용을 입력하세요", text: $newQuestionContent)
@@ -128,19 +170,27 @@ struct MentorView: View {
                 HStack {
                     Button("취소", role: .cancel) {
                         isShowingAddPopup = false
+                        isEditing = false
                         newQuestionContent = ""
                     }
 
-                    Button("추가") {
-                        addQuestion()
+                    Button(isEditing ? "수정" : "추가") {
+                        if isEditing {
+                            updateQuestion()
+                        } else {
+                            addQuestion()
+                        }
                         isShowingAddPopup = false
+                        isEditing = false
                     }
                 }
             }
             .padding()
-            .presentationDetents([.height(250)]) // 고정 높이 시트
+            .presentationDetents([.height(200)])
         }
     }
+
+    // MARK: - CRUD 함수
 
     private func addQuestion() {
         guard !newQuestionContent.trimmingCharacters(in: .whitespaces).isEmpty else { return }
@@ -155,6 +205,24 @@ struct MentorView: View {
         context.insert(new)
         try? context.save()
         newQuestionContent = ""
+
         currentIndex = mentorQuestions.count - 1
+    }
+
+    private func deleteCurrentQuestion() {
+        guard let question = currentQuestion else { return }
+
+        context.delete(question)
+        try? context.save()
+
+        // 현재 인덱스가 삭제 후 유효한 범위로 조정
+        currentIndex = max(0, min(currentIndex, mentorQuestions.count - 2))
+    }
+
+    private func updateQuestion() {
+        guard let question = currentQuestion else { return }
+        question.content = newQuestionContent
+        try? context.save()
+        newQuestionContent = ""
     }
 }
