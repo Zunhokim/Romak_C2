@@ -11,41 +11,42 @@ struct  ContentView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                
                 Image("HomeBG")
                     .resizable()
                     .scaledToFill()
                     .ignoresSafeArea()
-                    .allowsHitTesting(false) // 터치 이벤트 무시
-                
+                    .allowsHitTesting(false)
+
+                // ✅ 가운데 콘텐츠 (Mentor / Learner 버튼)
                 VStack {
                     Spacer()
-                    
-                    // 가운데 정사각형 멘토/러너 버튼 가로 배치
-                    HStack(spacing: 20) {
-                        // 멘토 모드 버튼
+
+                    HStack(spacing: 10) {
                         NavigationLink(destination: MentorView()) {
-                            SquareButtonYellow(title: "Mentor", color: Color(hex: "#FBF6A4"))
+                            SquareButtonYellow(title: "\nMentor", color: Color(hex: "#FBF6A4"))
                         }
-                        
-                        // 러너 모드 버튼
                         NavigationLink(destination: LearnerView()) {
-                            SquareButtonRed(title: "Learner", color: Color(hex: "#F08484"))
+                            SquareButtonRed(title: "\nLearner", color: Color(hex: "#F08484"))
                         }
                     }
-                    
+
                     Spacer()
-                    
-                    // 하단 텍스트 버튼
+                }
+
+                // ✅ 하단 고정 Show All Questions 버튼
+                VStack {
+                    Spacer()
                     NavigationLink(destination: QuestionListView()) {
                         Text("Show All Questions")
                             .font(.footnote)
                             .foregroundColor(.gray)
                             .underline()
-                            .padding(.bottom, 40)
+                            .padding(.bottom, 80) // 바닥에서 살짝 위로 띄움
                     }
                 }
             }
+
+
         }
         .navigationBarHidden(true)
     }
@@ -59,7 +60,7 @@ struct SquareButtonYellow: View {
         ZStack {
             RoundedRectangle(cornerRadius: 20)
                 .fill(color.opacity(1))
-                .frame(width: 160, height: 160)
+                .frame(width: 160, height: 180)
             
                 VStack {
                     Image("Mentor")
@@ -83,7 +84,7 @@ struct SquareButtonRed: View {
         ZStack {
             RoundedRectangle(cornerRadius: 20)
                 .fill(color.opacity(1))
-                .frame(width: 160, height: 160)
+                .frame(width: 160, height: 180)
             
                 VStack {
                     Image("Learner")
