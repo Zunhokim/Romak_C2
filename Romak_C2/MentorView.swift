@@ -27,6 +27,7 @@ struct MentorView: View {
     @State private var isEditing = false
     @State private var newQuestionContent = ""
     @State private var showRatedMessage = false
+    @State private var isShowingDeleteAlert = false
 
     var body: some View {
         let total = mentorQuestions.count
@@ -79,7 +80,7 @@ struct MentorView: View {
                                     }
                             }
                         }
-                        .font(.title2)
+                        .font(.title)
 
                         Text("\(question.averageRating, specifier: "%.1f")점")
                             .font(.subheadline)
@@ -100,23 +101,26 @@ struct MentorView: View {
                     Button(action: {
                         currentIndex = (currentIndex - 1 + total) % total
                     }) {
-                        Text("Previous")
-                            .foregroundColor(.black)
-                            .padding(.horizontal, 24)
-                            .padding(.vertical, 12)
-                            .background(Color(hex: "#FBF6A4"))
-                            .cornerRadius(12)
+                        RoundedRectangle(cornerRadius: 20)
+                            .fill(Color(hex: "#FBF6A4"))
+                            .frame(width: 140, height: 60)
+                            .overlay(
+                                Text("Previous")
+                                    .font(.headline)
+                                    .foregroundColor(.black)
+                            )
                     }
 
                     Button(action: {
                         currentIndex = (currentIndex + 1) % total
                     }) {
-                        Text("Next")
-                            .foregroundColor(.white)
-                            .padding(.horizontal, 24)
-                            .padding(.vertical, 12)
-                            .background(Color(hex: "#F08484"))
-                            .cornerRadius(12)
+                        RoundedRectangle(cornerRadius: 20)
+                            .fill(Color(hex: "F08484"))
+                            .frame(width: 140, height: 60)
+                            .overlay(
+                                Text("Next")
+                                    .font(.headline)
+                                    .foregroundColor(.white))
                     }
                 }
 
@@ -131,18 +135,26 @@ struct MentorView: View {
                         }
                     }) {
                         Image(systemName: "pencil")
-                            .font(.title2)
+                            .font(.title)
                             .padding()
                             .clipShape(Circle())
                     }
 
                     Spacer()
 
-                    Button(action: deleteCurrentQuestion) {
+                    Button(action: {
+                        isShowingDeleteAlert = true
+                    }) {
                         Image(systemName: "trash")
-                            .font(.title2)
+                            .font(.title)
                             .padding()
                             .clipShape(Circle())
+                    }
+                    .alert("정말 이 질문을 삭제할까요?\n삭제된 질문은 복구되지 않습니다!", isPresented: $isShowingDeleteAlert) {
+                        Button("삭제", role: .destructive) {
+                            deleteCurrentQuestion()
+                        }
+                        Button("취소", role: .cancel) {}
                     }
                 }
                 .padding(.horizontal)
@@ -181,6 +193,11 @@ struct MentorView: View {
                         isEditing = false
                         newQuestionContent = ""
                     }
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 10)
+                    .background(Color.accentColor)
+                    .foregroundColor(.white)
+                    .cornerRadius(8)
 
                     Button(isEditing ? "수정" : "추가") {
                         if isEditing {
@@ -191,6 +208,11 @@ struct MentorView: View {
                         isShowingAddPopup = false
                         isEditing = false
                     }
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 10)
+                    .background(Color.accentColor)
+                    .foregroundColor(.white)
+                    .cornerRadius(8)
                 }
             }
             .padding()

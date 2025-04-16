@@ -25,12 +25,12 @@ struct  ContentView: View {
                     HStack(spacing: 20) {
                         // 멘토 모드 버튼
                         NavigationLink(destination: MentorView()) {
-                            SquareButton(title: "Mentor", color: Color(hex: "#FBF6A4"))
+                            SquareButtonYellow(title: "Mentor", color: Color(hex: "#FBF6A4"))
                         }
                         
                         // 러너 모드 버튼
                         NavigationLink(destination: LearnerView()) {
-                            SquareButton(title: "Learner", color: Color(hex: "#F08484"))
+                            SquareButtonRed(title: "Learner", color: Color(hex: "#F08484"))
                         }
                     }
                     
@@ -51,7 +51,7 @@ struct  ContentView: View {
     }
 }
 
-struct SquareButton: View {
+struct SquareButtonYellow: View {
     var title: String
     var color: Color
 
@@ -59,11 +59,41 @@ struct SquareButton: View {
         ZStack {
             RoundedRectangle(cornerRadius: 20)
                 .fill(color.opacity(1))
-                .frame(width: 140, height: 140)
+                .frame(width: 160, height: 160)
             
-            Text(title)
-                .font(.headline)
-                .foregroundColor(.white)
+                VStack {
+                    Image("Mentor")
+                        .resizable()
+                        .frame(width: 100, height: 100)
+                    
+                    Text(title)
+                        .font(.headline)
+                        .foregroundColor(.black)
+                }
+        }
+        .contentShape(Rectangle())
+    }
+}
+
+struct SquareButtonRed: View {
+    var title: String
+    var color: Color
+
+    var body: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 20)
+                .fill(color.opacity(1))
+                .frame(width: 160, height: 160)
+            
+                VStack {
+                    Image("Learner")
+                        .resizable()
+                        .frame(width: 100, height: 100)
+                    
+                    Text(title)
+                        .font(.headline)
+                        .foregroundColor(.white)
+                }
         }
         .contentShape(Rectangle())
     }
@@ -88,11 +118,5 @@ extension Color {
         } else {
             self.init(.sRGB, red: 0, green: 0, blue: 0)
         }
-    }
-}
-
-#Preview {
-    NavigationView {
-        ContentView()
     }
 }
