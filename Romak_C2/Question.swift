@@ -10,7 +10,7 @@ import SwiftData
 
 enum QuestionMode: String, Codable {
     case mentor
-    case runner
+    case learner
 }
 
 @Model

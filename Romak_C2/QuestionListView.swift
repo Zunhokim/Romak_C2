@@ -5,6 +5,7 @@
 //  Created by 준호 on 4/13/25.
 //
 
+import Foundation
 import SwiftUI
 import SwiftData
 
@@ -17,8 +18,18 @@ enum UserFilter: String, CaseIterable, Identifiable {
 }
 
 enum VisibilityFilter: String, CaseIterable, Identifiable {
+    case all = "All"
     case visible = "Visible"
     case unvisible = "Unvisible"
+    
+    var id: String { self.rawValue }
+}
+
+enum SortOption: String, CaseIterable, Identifiable {
+    case dateDescending = "날짜 내림차순"
+    case dateAscending = "날짜 오름차순"
+    case ratingDescending = "평점 내림차순"
+    case ratingAscending = "평점 오름차순"
     
     var id: String { self.rawValue }
 }
@@ -28,11 +39,11 @@ struct QuestionListView: View {
     
     @State private var selectedUser: UserFilter = .all
     @State private var selectedVisibility: VisibilityFilter = .visible
-
+    @State private var selectedSort: SortOption = .dateDescending
+    
     var filteredQuestions: [Question] {
-        allQuestions
+        var filtered = allQuestions
             .filter { question in
-                // 유저 분류 필터링
                 switch selectedUser {
                 case .mentor: return question.mode == .mentor
                 case .learner: return question.mode == .runner
@@ -40,14 +51,24 @@ struct QuestionListView: View {
                 }
             }
             .filter { question in
-                // 제시 여부 필터링
                 let avg = question.averageRating
                 switch selectedVisibility {
                 case .visible: return avg > 2.0
                 case .unvisible: return avg <= 2.0
+                case .all: return true
                 }
             }
-            .sorted { $0.dateAdded > $1.dateAdded }
+        
+        switch selectedSort {
+        case .dateDescending:
+            return filtered.sorted { $0.dateAdded > $1.dateAdded }
+        case .dateAscending:
+            return filtered.sorted { $0.dateAdded < $1.dateAdded }
+        case .ratingDescending:
+            return filtered.sorted { $0.averageRating > $1.averageRating }
+        case .ratingAscending:
+            return filtered.sorted { $0.averageRating < $1.averageRating }
+        }
     }
 
     var body: some View {
@@ -62,24 +83,42 @@ struct QuestionListView: View {
                 VStack(alignment: .leading, spacing: 16) {
                     
                     // 🔹 필터 영역
-                    HStack {
-                        Text("유저 분류")
-                            .foregroundColor(.black)
-                        Picker("", selection: $selectedUser) {
-                            ForEach(UserFilter.allCases) { user in
-                                Text(user.rawValue).tag(user)
+                    VStack(spacing: 8) {
+                        // 첫 줄: 유저 + 제시
+                        HStack {
+                            Text("유저 분류")
+                                .foregroundColor(.black)
+                                .bold()
+                            Picker("", selection: $selectedUser) {
+                                ForEach(UserFilter.allCases) { user in
+                                    Text(user.rawValue).tag(user)
+                                }
                             }
-                        }
-                        .pickerStyle(.menu)
+                            .pickerStyle(.menu)
 
-                        Text("제시 여부")
-                            .foregroundColor(.black)
-                        Picker("", selection: $selectedVisibility) {
-                            ForEach(VisibilityFilter.allCases) { visibility in
-                                Text(visibility.rawValue).tag(visibility)
+                            Text("제시 여부")
+                                .foregroundColor(.black)
+                                .bold()
+                            Picker("", selection: $selectedVisibility) {
+                                ForEach(VisibilityFilter.allCases) { visibility in
+                                    Text(visibility.rawValue).tag(visibility)
+                                }
                             }
+                            .pickerStyle(.menu)
                         }
-                        .pickerStyle(.menu)
+
+                        // 두 번째 줄: 정렬
+                        HStack {
+                            Text("정렬")
+                                .foregroundColor(.black)
+                                .bold()
+                            Picker("", selection: $selectedSort) {
+                                ForEach(SortOption.allCases) { option in
+                                    Text(option.rawValue).tag(option)
+                                }
+                            }
+                            .pickerStyle(.segmented)
+                        }
                     }
                     .padding(.horizontal)
                     .padding(.top, 12)
@@ -87,7 +126,7 @@ struct QuestionListView: View {
                     // 🔹 리스트
                     if filteredQuestions.isEmpty {
                         Text("조건에 맞는 질문이 없습니다.")
-                            .foregroundColor(.white)
+                            .foregroundColor(.black)
                             .font(.title3)
                             .padding()
                     } else {
@@ -95,7 +134,7 @@ struct QuestionListView: View {
                             VStack(spacing: 12) {
                                 ForEach(filteredQuestions) { question in
                                     VStack(alignment: .leading, spacing: 6) {
-                                        Text("모드: \(question.mode == .mentor ? "멘토" : "러너")")
+                                        Text("\(question.mode == .mentor ? "멘토" : "러너") 모드로부터 추가")
                                             .font(.subheadline)
                                             .foregroundColor(.gray)
 
@@ -104,17 +143,19 @@ struct QuestionListView: View {
                                             .foregroundColor(.black)
 
                                         HStack {
-                                            Text("⭐️ \(question.averageRating, specifier: "%.1f")")
-                                            Spacer()
                                             Text(formatDate(question.dateAdded))
                                                 .font(.caption)
                                                 .foregroundColor(.gray)
+                                            Spacer()
+                                            Text("⭐️ \(question.averageRating, specifier: "%.1f")")
                                         }
                                     }
                                     .padding()
-                                    .background(Color.white)
+                                    .background(Color.white.opacity(0.8))
                                     .cornerRadius(16)
-                                    .shadow(radius: 2)
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 16)
+                                            .stroke(Color(hex: "999999"), lineWidth: 1))
                                     .padding(.horizontal)
                                 }
                             }
@@ -131,11 +172,9 @@ struct QuestionListView: View {
         }
     }
 
-    // 날짜 포맷 함수
     private func formatDate(_ date: Date) -> String {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy.MM.dd"
         return formatter.string(from: date)
     }
 }
-

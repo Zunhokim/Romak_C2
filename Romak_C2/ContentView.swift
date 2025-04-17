@@ -65,7 +65,7 @@ struct SquareButtonYellow: View {
                 VStack {
                     Image("Mentor")
                         .resizable()
-                        .frame(width: 100, height: 100)
+                        .frame(width: 90, height: 90)
                     
                     Text(title)
                         .font(.headline)
@@ -89,7 +89,7 @@ struct SquareButtonRed: View {
                 VStack {
                     Image("Learner")
                         .resizable()
-                        .frame(width: 100, height: 100)
+                        .frame(width: 90, height: 90)
                     
                     Text(title)
                         .font(.headline)
