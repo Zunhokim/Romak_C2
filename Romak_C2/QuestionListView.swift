@@ -135,12 +135,12 @@ struct QuestionListView: View {
                                 ForEach(filteredQuestions) { question in
                                     VStack(alignment: .leading, spacing: 6) {
                                         Text(formatDate(question.dateAdded))
-                                            .foregroundColor(.gray)
+                                            .foregroundColor(.black)
                                             .font(.custom("GmarketSansTTFLight", size: 12))
                                         
                                         Text(question.content)
                                             .foregroundColor(.black)
-                                            .font(.custom("GmarketSansTTFLight", size: 18))
+                                            .font(.custom("GmarketSansTTFMedium", size: 18))
                                             .padding(.top, 5)
                                             .padding(.bottom, 5)
 
@@ -169,7 +169,7 @@ struct QuestionListView: View {
                     Spacer()
                 }
                 .padding(.top)
-                .navigationTitle("All Question List")
+                .navigationTitle("전체 질문 목록")
                 .padding(.top, 44)
             }
         }
@@ -177,7 +177,8 @@ struct QuestionListView: View {
 
     private func formatDate(_ date: Date) -> String {
         let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy.MM.dd"
+        formatter.dateFormat = "yyyy.MM.dd HH:mm" // ⏰ 시간 포함!
         return formatter.string(from: date)
     }
+
 }

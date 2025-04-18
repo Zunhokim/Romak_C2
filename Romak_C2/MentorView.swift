@@ -39,145 +39,150 @@ struct MentorView: View {
                 .ignoresSafeArea()
                 .allowsHitTesting(false)
 
-            VStack(spacing: 24) {
-                Spacer()
+            GeometryReader { geometry in
+                VStack(spacing: 0) {
 
-                if total > 0 {
+                    // 1. 질문 번호 표시 (20%)
+                    Text("Mentor Mode")
+                        .font(.custom("Lemon-Regular", size: 28))
+                        .foregroundColor(.black)
+                        .frame(height: geometry.size.height * 0.20)
+                        .frame(maxWidth: .infinity, alignment: .center)
+                    
                     Text("\(currentIndex + 1) / \(total)")
                         .font(.headline)
                         .foregroundColor(.black)
-                        .multilineTextAlignment(.center)
-                }
+                        .frame(height: geometry.size.height * 0.05)
+                        .frame(maxWidth: .infinity, alignment: .center)
 
-                Text("Question!")
-                    .font(.title)
-                    .bold()
-                    .foregroundColor(.black)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .font(.custom("GmarketSansTTFBold", size: 24))
-
-                if let question = currentQuestion {
-                    Text(question.content)
+                    // 2. 제목 (5%)
+                    Text("Question!")
+                        .font(.custom("GmarketSansTTFBold", size: 24))
                         .foregroundColor(.black)
-                        .multilineTextAlignment(.leading)
+                        .frame(height: geometry.size.height * 0.05)
                         .frame(maxWidth: .infinity, alignment: .leading)
-                        .font(.custom("GmarketSansTTFLight", size: 20))
-                } else {
-                    Text("질문이 없습니다.")
-                        .foregroundColor(.black)
-                        .font(.custom("GmarketSansTTFLight", size: 20))
-                    
-                }
-                
-                Spacer()
 
-                // 별점 + 평균 + 평가 완료 메시지
-                if let question = currentQuestion {
-                    VStack(spacing: 8) {
-                        HStack(spacing: 4) {
-                            ForEach(1...5, id: \.self) { i in
-                                Image(systemName: i <= Int(question.averageRating.rounded()) ? "star.fill" : "star")
-                                    .foregroundColor(.yellow)
-                                    .onTapGesture {
-                                        submitRating(i)
-                                    }
+                    // 3. 질문 내용 (30%)
+                    if let question = currentQuestion {
+                        Text(question.content)
+                            .font(.custom("GmarketSansTTFMedium", size: 20))
+                            .foregroundColor(.black)
+                            .multilineTextAlignment(.leading)
+                            .frame(height: geometry.size.height * 0.20)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    } else {
+                        Text("질문이 없습니다.")
+                            .font(.custom("GmarketSansTTFMedium", size: 20))
+                            .foregroundColor(.black)
+                            .frame(height: geometry.size.height * 0.20)
+                            .frame(maxWidth: .infinity, alignment: .center)
+                    }
+
+                    // 4. 별점 및 평가 메시지 (20%)
+                    if let question = currentQuestion {
+                        VStack(spacing: 8) {
+                            HStack(spacing: 4) {
+                                ForEach(1...5, id: \.self) { i in
+                                    Image(systemName: i <= Int(question.averageRating.rounded()) ? "star.fill" : "star")
+                                        .foregroundColor(.yellow)
+                                        .onTapGesture {
+                                            submitRating(i)
+                                        }
+                                }
+                            }
+                            .font(.title)
+
+                            Text("\(question.averageRating, specifier: "%.1f")점")
+                                .font(.subheadline)
+                                .foregroundColor(.black)
+
+                            if showRatedMessage {
+                                Text("평가 완료!")
+                                    .font(.caption)
+                                    .foregroundColor(.green)
                             }
                         }
-                        .font(.title)
+                        .frame(height: geometry.size.height * 0.10)
+                        .frame(maxWidth: .infinity)
+                    }
 
-                        Text("\(question.averageRating, specifier: "%.1f")점")
-                            .font(.subheadline)
-                            .foregroundColor(.black)
+                    // 5. 이동 버튼 (15%)
+                    HStack(spacing: 40) {
+                        Button(action: {
+                            currentIndex = (currentIndex - 1 + total) % total
+                        }) {
+                            RoundedRectangle(cornerRadius: 20)
+                                .fill(total == 0 ? Color.gray.opacity(0.4) : Color(hex: "#FBF6A4"))
+                                .frame(width: 140, height: 60)
+                                .overlay(
+                                    Text("Previous")
+                                        .font(.custom("Lemon-Regular", size: 14))
+                                        .foregroundColor(total == 0 ? .gray : .black)
+                                )
+                        }
+                        .disabled(total == 0)
 
-                        if showRatedMessage {
-                            Text("평가 완료!")
-                                .font(.caption)
-                                .foregroundColor(.green)
+                        Button(action: {
+                            currentIndex = (currentIndex + 1) % total
+                        }) {
+                            RoundedRectangle(cornerRadius: 20)
+                                .fill(total == 0 ? Color.gray.opacity(0.4) : Color(hex: "F08484"))
+                                .frame(width: 140, height: 60)
+                                .overlay(
+                                    Text("Next")
+                                        .font(.custom("Lemon-Regular", size: 14))
+                                        .foregroundColor(total == 0 ? .gray : .white)
+                                )
+                        }
+                        .disabled(total == 0)
+                    }
+                    .frame(height: geometry.size.height * 0.15)
+
+                    // 6. 수정/삭제 버튼 (10%)
+                    HStack {
+                        Button(action: {
+                            if let q = currentQuestion {
+                                newQuestionContent = q.content
+                                isEditing = true
+                            }
+                        }) {
+                            Image(systemName: "pencil")
+                                .font(.title)
+                                .padding()
+                                .foregroundColor(currentQuestion == nil ? .gray.opacity(0.4) : .blue)
+                                .clipShape(Circle())
+                        }
+                        .disabled(currentQuestion == nil)
+
+                        Spacer()
+
+                        Button(action: {
+                            isShowingDeleteAlert = true
+                        }) {
+                            Image(systemName: "trash")
+                                .font(.title)
+                                .padding()
+                                .foregroundColor(currentQuestion == nil ? .gray.opacity(0.4) : .red)
+                                .clipShape(Circle())
+                        }
+                        .disabled(currentQuestion == nil)
+                        .alert("정말 이 질문을 삭제할까요?\n삭제된 질문은 복구되지 않습니다!", isPresented: $isShowingDeleteAlert) {
+                            Button("삭제", role: .destructive) {
+                                deleteCurrentQuestion()
+                            }
+                            Button("취소", role: .cancel) {}
                         }
                     }
+                    .padding(.horizontal)
+                    .frame(height: geometry.size.height * 0.25)
                 }
-
-                Spacer()
-
-                // 이동 버튼
-                HStack(spacing: 40) {
-                    // 🔸 Previous 버튼
-                    Button(action: {
-                        currentIndex = (currentIndex - 1 + total) % total
-                    }) {
-                        RoundedRectangle(cornerRadius: 20)
-                            .fill(total == 0 ? Color.gray.opacity(0.4) : Color(hex: "#FBF6A4"))
-                            .frame(width: 140, height: 60)
-                            .overlay(
-                                Text("Previous")
-                                    .font(.headline)
-                                    .foregroundColor(total == 0 ? .gray : .black)
-                            )
-                    }
-                    .disabled(total == 0)
-
-                    // 🔸 Next 버튼
-                    Button(action: {
-                        currentIndex = (currentIndex + 1) % total
-                    }) {
-                        RoundedRectangle(cornerRadius: 20)
-                            .fill(total == 0 ? Color.gray.opacity(0.4) : Color(hex: "F08484"))
-                            .frame(width: 140, height: 60)
-                            .overlay(
-                                Text("Next")
-                                    .font(.headline)
-                                    .foregroundColor(total == 0 ? .gray : .white)
-                            )
-                    }
-                    .disabled(total == 0)
-                }
-
-
-                Spacer()
-
-                // 수정 / 삭제
-                HStack {
-                    Button(action: {
-                        if let q = currentQuestion {
-                            newQuestionContent = q.content
-                            isEditing = true
-                        }
-                    }) {
-                        Image(systemName: "pencil")
-                            .font(.title)
-                            .padding()
-                            .foregroundColor(currentQuestion == nil ? .gray.opacity(0.4) : .blue)
-                            .clipShape(Circle())
-                    }
-                    .disabled(currentQuestion == nil)
-
-
-                    Spacer()
-
-                    Button(action: {
-                        isShowingDeleteAlert = true
-                    }) {
-                        Image(systemName: "trash")
-                            .font(.title)
-                            .padding()
-                            .foregroundColor(currentQuestion == nil ? .gray.opacity(0.4) : .red)
-                            .clipShape(Circle())
-                    }
-                    .disabled(currentQuestion == nil) // ✅ 조건에 따라 비활성화
-                    .alert("정말 이 질문을 삭제할까요?\n삭제된 질문은 복구되지 않습니다!", isPresented: $isShowingDeleteAlert) {
-                        Button("삭제", role: .destructive) {
-                            deleteCurrentQuestion()
-                        }
-                        Button("취소", role: .cancel) {}
-                    }
-
-                }
-                .padding(.horizontal)
-                .padding(.bottom, 60)
+                .padding()
             }
-            .padding()
+
+
         }
-        .navigationTitle("Mentor Mode")
+
+        
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button("Add") {
