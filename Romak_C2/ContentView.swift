@@ -23,10 +23,10 @@ struct  ContentView: View {
 
                     HStack(spacing: 10) {
                         NavigationLink(destination: MentorView()) {
-                            SquareButtonYellow(title: "\nMentor", color: Color(hex: "#FBF6A4"))
+                            SquareButtonYellow(title: "Mentor", color: Color(hex: "#FBF6A4"))
                         }
                         NavigationLink(destination: LearnerView()) {
-                            SquareButtonRed(title: "\nLearner", color: Color(hex: "#F08484"))
+                            SquareButtonRed(title: "Learner", color: Color(hex: "#F08484"))
                         }
                     }
 
@@ -37,9 +37,9 @@ struct  ContentView: View {
                 VStack {
                     Spacer()
                     NavigationLink(destination: QuestionListView()) {
-                        Text("Show All Questions")
+                        Text("Show All Questions >")
                             .font(.footnote)
-                            .foregroundColor(.gray)
+                            .foregroundColor(.blue)
                             .underline()
                             .padding(.bottom, 80) // 바닥에서 살짝 위로 띄움
                     }
@@ -68,8 +68,9 @@ struct SquareButtonYellow: View {
                         .frame(width: 90, height: 90)
                     
                     Text(title)
-                        .font(.headline)
+                        .font(.custom("Lemon-Regular", size: 20))
                         .foregroundColor(.black)
+                        .padding(.top, 10)
                 }
         }
         .contentShape(Rectangle())
@@ -92,8 +93,9 @@ struct SquareButtonRed: View {
                         .frame(width: 90, height: 90)
                     
                     Text(title)
-                        .font(.headline)
+                        .font(.custom("Lemon-Regular", size: 20))
                         .foregroundColor(.white)
+                        .padding(.top, 10)
                 }
         }
         .contentShape(Rectangle())

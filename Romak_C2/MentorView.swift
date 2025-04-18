@@ -98,31 +98,37 @@ struct MentorView: View {
 
                 // 이동 버튼
                 HStack(spacing: 40) {
+                    // 🔸 Previous 버튼
                     Button(action: {
                         currentIndex = (currentIndex - 1 + total) % total
                     }) {
                         RoundedRectangle(cornerRadius: 20)
-                            .fill(Color(hex: "#FBF6A4"))
+                            .fill(total == 0 ? Color.gray.opacity(0.4) : Color(hex: "#FBF6A4"))
                             .frame(width: 140, height: 60)
                             .overlay(
                                 Text("Previous")
                                     .font(.headline)
-                                    .foregroundColor(.black)
+                                    .foregroundColor(total == 0 ? .gray : .black)
                             )
                     }
+                    .disabled(total == 0)
 
+                    // 🔸 Next 버튼
                     Button(action: {
                         currentIndex = (currentIndex + 1) % total
                     }) {
                         RoundedRectangle(cornerRadius: 20)
-                            .fill(Color(hex: "F08484"))
+                            .fill(total == 0 ? Color.gray.opacity(0.4) : Color(hex: "F08484"))
                             .frame(width: 140, height: 60)
                             .overlay(
                                 Text("Next")
                                     .font(.headline)
-                                    .foregroundColor(.white))
+                                    .foregroundColor(total == 0 ? .gray : .white)
+                            )
                     }
+                    .disabled(total == 0)
                 }
+
 
                 Spacer()
 
@@ -137,8 +143,11 @@ struct MentorView: View {
                         Image(systemName: "pencil")
                             .font(.title)
                             .padding()
+                            .foregroundColor(currentQuestion == nil ? .gray.opacity(0.4) : .blue)
                             .clipShape(Circle())
                     }
+                    .disabled(currentQuestion == nil)
+
 
                     Spacer()
 
@@ -148,14 +157,17 @@ struct MentorView: View {
                         Image(systemName: "trash")
                             .font(.title)
                             .padding()
+                            .foregroundColor(currentQuestion == nil ? .gray.opacity(0.4) : .red)
                             .clipShape(Circle())
                     }
+                    .disabled(currentQuestion == nil) // ✅ 조건에 따라 비활성화
                     .alert("정말 이 질문을 삭제할까요?\n삭제된 질문은 복구되지 않습니다!", isPresented: $isShowingDeleteAlert) {
                         Button("삭제", role: .destructive) {
                             deleteCurrentQuestion()
                         }
                         Button("취소", role: .cancel) {}
                     }
+
                 }
                 .padding(.horizontal)
                 .padding(.bottom, 60)
