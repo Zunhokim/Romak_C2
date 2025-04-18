@@ -38,7 +38,7 @@ struct QuestionListView: View {
     @Query private var allQuestions: [Question]
     
     @State private var selectedUser: UserFilter = .all
-    @State private var selectedVisibility: VisibilityFilter = .visible
+    @State private var selectedVisibility: VisibilityFilter = .all
     @State private var selectedSort: SortOption = .dateDescending
     
     var filteredQuestions: [Question] {
@@ -46,7 +46,7 @@ struct QuestionListView: View {
             .filter { question in
                 switch selectedUser {
                 case .mentor: return question.mode == .mentor
-                case .learner: return question.mode == .runner
+                case .learner: return question.mode == .learner
                 case .all: return true
                 }
             }
