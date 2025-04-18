@@ -185,7 +185,7 @@ struct LearnerView: View {
         }
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
-                Button("Add") {
+                Button("추가") {
                     isShowingAddPopup = true
                 }
             }
