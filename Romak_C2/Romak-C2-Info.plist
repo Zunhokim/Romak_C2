@@ -7,7 +7,5 @@
 		<string>Lemon-Regular.ttf</string>
 		<string>TmoneyRoundWindRegular.ttf</string>
 	</array>
-	<key>NSAppTransportSecurity</key>
-	<dict/>
 </dict>
 </plist>

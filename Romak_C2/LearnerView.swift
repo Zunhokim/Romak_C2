@@ -50,7 +50,6 @@ struct LearnerView: View {
                 }
 
                 Text("Question!")
-                    .bold()
                     .foregroundColor(.black)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .font(.custom("TmoneyRoundWindRegular.ttf", size: 20))
