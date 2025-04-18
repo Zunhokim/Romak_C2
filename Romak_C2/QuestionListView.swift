@@ -134,20 +134,23 @@ struct QuestionListView: View {
                             VStack(spacing: 12) {
                                 ForEach(filteredQuestions) { question in
                                     VStack(alignment: .leading, spacing: 6) {
-                                        Text("\(question.mode == .mentor ? "멘토" : "러너") 모드로부터 추가")
-                                            .font(.subheadline)
+                                        Text(formatDate(question.dateAdded))
                                             .foregroundColor(.gray)
-
+                                            .font(.custom("GmarketSansTTFLight", size: 12))
+                                        
                                         Text(question.content)
-                                            .font(.headline)
                                             .foregroundColor(.black)
+                                            .font(.custom("GmarketSansTTFLight", size: 18))
+                                            .padding(.top, 5)
+                                            .padding(.bottom, 5)
 
                                         HStack {
-                                            Text(formatDate(question.dateAdded))
-                                                .font(.caption)
+                                            Text("\(question.mode == .mentor ? "멘토" : "러너") 모드로부터 추가")
                                                 .foregroundColor(.gray)
+                                                .font(.custom("GmarketSansTTFBold", size: 12))
                                             Spacer()
                                             Text("⭐️ \(question.averageRating, specifier: "%.1f")")
+                                                .font(.custom("GmarketSansTTFBold", size: 12))
                                         }
                                     }
                                     .padding()
@@ -155,7 +158,7 @@ struct QuestionListView: View {
                                     .cornerRadius(16)
                                     .overlay(
                                         RoundedRectangle(cornerRadius: 16)
-                                            .stroke(Color(hex: "999999"), lineWidth: 1))
+                                            .stroke(Color(hex: "AAAAAA"), lineWidth: 1))
                                     .padding(.horizontal)
                                 }
                             }

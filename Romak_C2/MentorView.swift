@@ -54,16 +54,19 @@ struct MentorView: View {
                     .bold()
                     .foregroundColor(.black)
                     .frame(maxWidth: .infinity, alignment: .leading)
+                    .font(.custom("GmarketSansTTFBold", size: 24))
 
                 if let question = currentQuestion {
                     Text(question.content)
-                        .font(.title2)
                         .foregroundColor(.black)
                         .multilineTextAlignment(.leading)
                         .frame(maxWidth: .infinity, alignment: .leading)
+                        .font(.custom("GmarketSansTTFLight", size: 20))
                 } else {
                     Text("질문이 없습니다.")
                         .foregroundColor(.black)
+                        .font(.custom("GmarketSansTTFLight", size: 20))
+                    
                 }
                 
                 Spacer()
