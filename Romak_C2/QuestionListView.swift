@@ -10,26 +10,26 @@ import SwiftUI
 import SwiftData
 
 enum UserFilter: String, CaseIterable, Identifiable {
-    case all = "All"
-    case mentor = "Mentor"
-    case learner = "Learner"
+    case all = "전체"
+    case mentor = "멘토"
+    case learner = "러너"
     
     var id: String { self.rawValue }
 }
 
 enum VisibilityFilter: String, CaseIterable, Identifiable {
-    case all = "All"
-    case visible = "Visible"
-    case unvisible = "Unvisible"
+    case all = "전체"
+    case visible = "제시됨"
+    case unvisible = "제외됨"
     
     var id: String { self.rawValue }
 }
 
 enum SortOption: String, CaseIterable, Identifiable {
-    case dateDescending = "날짜 내림차순"
-    case dateAscending = "날짜 오름차순"
-    case ratingDescending = "평점 내림차순"
-    case ratingAscending = "평점 오름차순"
+    case dateDescending = "최신순"
+    case dateAscending = "오래된순"
+    case ratingDescending = "평점 높은순"
+    case ratingAscending = "평점 낮은순"
     
     var id: String { self.rawValue }
 }
@@ -83,45 +83,61 @@ struct QuestionListView: View {
                 VStack(alignment: .leading, spacing: 16) {
                     
                     // 🔹 필터 영역
-                    VStack(spacing: 8) {
-                        // 첫 줄: 유저 + 제시
-                        HStack {
-                            Text("유저 분류")
-                                .foregroundColor(.black)
-                                .bold()
-                            Picker("", selection: $selectedUser) {
-                                ForEach(UserFilter.allCases) { user in
-                                    Text(user.rawValue).tag(user)
+                    VStack(spacing: 12) {
+                        // 유저 분류와 제시 여부 한 줄에 배치
+                        HStack(spacing: 12) {
+                            // 유저 분류 피커
+                            HStack(spacing: 8) {
+                                HStack(spacing: 4) {
+                                    Image(systemName: "person.2.fill")
+                                        .foregroundColor(Color(hex: "#F9BF64"))
+                                    Text("유저 분류")
+                                        .font(.custom("GmarketSansTTFBold", size: 12))
                                 }
+                                Picker("유저 분류", selection: $selectedUser) {
+                                    ForEach(UserFilter.allCases) { user in
+                                        Text(user.rawValue).tag(user)
+                                    }
+                                }
+                                .pickerStyle(.menu)
+                                .font(.system(size: 14))
                             }
-                            .pickerStyle(.menu)
+                            .frame(maxWidth: .infinity)
+                            .padding(8)
+                            .background(Color.white.opacity(0.8))
+                            .cornerRadius(8)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .stroke(Color(hex: "AAAAAA"), lineWidth: 1))
 
-                            Text("제시 여부")
-                                .foregroundColor(.black)
-                                .bold()
-                            Picker("", selection: $selectedVisibility) {
-                                ForEach(VisibilityFilter.allCases) { visibility in
-                                    Text(visibility.rawValue).tag(visibility)
+                            // 제시 여부 피커
+                            HStack(spacing: 8) {
+                                HStack(spacing: 4) {
+                                    Image(systemName: "eye.fill")
+                                        .foregroundColor(Color(hex: "#F08484"))
+                                    Text("제시 여부")
+                                        .font(.custom("GmarketSansTTFBold", size: 12))
                                 }
-                            }
-                            .pickerStyle(.menu)
-                        }
-
-                        // 두 번째 줄: 정렬
-                        HStack {
-                            Text("정렬")
-                                .foregroundColor(.black)
-                                .bold()
-                            Picker("", selection: $selectedSort) {
-                                ForEach(SortOption.allCases) { option in
-                                    Text(option.rawValue).tag(option)
+                                Picker("제시 여부", selection: $selectedVisibility) {
+                                    ForEach(VisibilityFilter.allCases) { visibility in
+                                        Text(visibility.rawValue).tag(visibility)
+                                    }
                                 }
+                                .pickerStyle(.menu)
+                                .font(.system(size: 14))
                             }
-                            .pickerStyle(.segmented)
+                            .frame(maxWidth: .infinity)
+                            .padding(8)
+                            .background(Color.white.opacity(0.8))
+                            .cornerRadius(8)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .stroke(Color(hex: "AAAAAA"), lineWidth: 1))
                         }
                     }
                     .padding(.horizontal)
                     .padding(.top, 12)
+                    .padding(.bottom, 8)
 
                     // 🔹 리스트
                     if filteredQuestions.isEmpty {
@@ -130,41 +146,56 @@ struct QuestionListView: View {
                             .font(.title3)
                             .padding()
                     } else {
-                        ScrollView {
-                            VStack(spacing: 12) {
-                                ForEach(filteredQuestions) { question in
-                                    VStack(alignment: .leading, spacing: 6) {
-                                        Text(question.isDefault ? "기본 질문" : formatDate(question.dateAdded))
-                                            .foregroundColor(.black)
-                                            .font(.custom("GmarketSansTTFLight", size: 12))
-                                        
-                                        Text(question.content)
-                                            .foregroundColor(.black)
-                                            .font(.custom("GmarketSansTTFMedium", size: 16))
-                                            .lineSpacing(8)
-                                            .padding(.top, 5)
-                                            .padding(.bottom, 5)
-
-                                        HStack {
-                                            Text(question.mode == .mentor ? "멘토 모드" : "러너 모드")
-                                                .foregroundColor(question.mode == .mentor ? Color(hex: "#F9BF64") : Color(hex: "#F08484"))
-                                                .font(.custom("GmarketSansTTFBold", size: 12))
-
-                                            Spacer()
-                                            Text("⭐️ \(question.averageRating, specifier: "%.1f")")
-                                                .font(.custom("GmarketSansTTFBold", size: 12))
-                                        }
+                        VStack(alignment: .leading, spacing: 8) {
+                            // 정렬 피커를 리스트 위에 배치
+                            HStack {
+                                Spacer()
+                                Picker("정렬", selection: $selectedSort) {
+                                    ForEach(SortOption.allCases) { option in
+                                        Text(option.rawValue).tag(option)
                                     }
-                                    .padding()
-                                    .background(Color.white.opacity(0.8))
-                                    .cornerRadius(16)
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 16)
-                                            .stroke(Color(hex: "AAAAAA"), lineWidth: 1))
-                                    .padding(.horizontal)
                                 }
+                                .pickerStyle(.menu)
+                                .font(.system(size: 12))
                             }
-                            .padding(.top, 4)
+                            .padding(.horizontal)
+                            
+                            ScrollView {
+                                VStack(spacing: 12) {
+                                    ForEach(filteredQuestions) { question in
+                                        VStack(alignment: .leading, spacing: 6) {
+                                            Text(question.isDefault ? "기본 질문" : formatDate(question.dateAdded))
+                                                .foregroundColor(.black)
+                                                .font(.custom("GmarketSansTTFLight", size: 12))
+                                            
+                                            Text(question.content)
+                                                .foregroundColor(.black)
+                                                .font(.custom("GmarketSansTTFMedium", size: 16))
+                                                .lineSpacing(8)
+                                                .padding(.top, 5)
+                                                .padding(.bottom, 5)
+
+                                            HStack {
+                                                Text(question.mode == .mentor ? "멘토 모드" : "러너 모드")
+                                                    .foregroundColor(question.mode == .mentor ? Color(hex: "#F9BF64") : Color(hex: "#F08484"))
+                                                    .font(.custom("GmarketSansTTFBold", size: 12))
+
+                                                Spacer()
+                                                Text("⭐️ \(question.averageRating, specifier: "%.1f")")
+                                                    .font(.custom("GmarketSansTTFBold", size: 12))
+                                            }
+                                        }
+                                        .padding()
+                                        .background(Color.white.opacity(0.8))
+                                        .cornerRadius(16)
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 16)
+                                                .stroke(Color(hex: "AAAAAA"), lineWidth: 1))
+                                        .padding(.horizontal)
+                                    }
+                                }
+                                .padding(.top, 4)
+                            }
                         }
                     }
 
