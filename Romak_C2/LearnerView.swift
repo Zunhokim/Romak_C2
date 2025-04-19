@@ -46,7 +46,7 @@ struct LearnerView: View {
 
             GeometryReader { geometry in
                 VStack(spacing: 0) {
-                    // 1. 상단 타이틀 (20%)
+                    // 1. 상단 타이틀
                     Text("Learner Mode")
                         .font(.custom("Lemon-Regular", size: 28))
                         .foregroundColor(.black)
@@ -59,21 +59,26 @@ struct LearnerView: View {
                         .frame(height: geometry.size.height * 0.05)
                         .frame(maxWidth: .infinity, alignment: .center)
 
-                    // 2. 제목 (5%)
+                    // 2. 제목
                     Text("Question!")
                         .font(.custom("GmarketSansTTFBold", size: 24))
                         .foregroundColor(.black)
                         .frame(height: geometry.size.height * 0.05)
                         .frame(maxWidth: .infinity, alignment: .leading)
 
-                    // 3. 질문 내용 (30%)
+                    // 3. 질문 내용
                     if let question = currentQuestion {
-                        Text(question.content)
-                            .font(.custom("GmarketSansTTFMedium", size: 20))
-                            .foregroundColor(.black)
-                            .multilineTextAlignment(.leading)
-                            .frame(height: geometry.size.height * 0.20)
-                            .frame(maxWidth: .infinity, alignment: .leading)
+                        VStack {
+                            Text(question.content)
+                                .font(.custom("GmarketSansTTFMedium", size: 20))
+                                .foregroundColor(.black)
+                                .multilineTextAlignment(.leading)
+                                .lineSpacing(8)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(.top, 10)
+                            Spacer()
+                        }
+                        .frame(height: geometry.size.height * 0.20)
                     } else {
                         Text("질문이 없습니다.")
                             .font(.custom("GmarketSansTTFMedium", size: 20))
@@ -82,7 +87,8 @@ struct LearnerView: View {
                             .frame(maxWidth: .infinity, alignment: .center)
                     }
 
-                    // 4. 별점 (20%)
+
+                    // 4. 별점
                     if let question = currentQuestion {
                         VStack(spacing: 8) {
                             GeometryReader { geo in
@@ -125,7 +131,7 @@ struct LearnerView: View {
                         .frame(maxWidth: .infinity)
                     }
 
-                    // 5. 이동 버튼 (15%)
+                    // 5. 이동 버튼
                     HStack(spacing: 40) {
                         Button(action: {
                             currentIndex = (currentIndex - 1 + total) % total
@@ -159,7 +165,7 @@ struct LearnerView: View {
                     }
                     .frame(height: geometry.size.height * 0.15)
 
-                    // 6. 수정/삭제 버튼 (10%)
+                    // 6. 수정/삭제 버튼
                     HStack {
                         Button(action: {
                             if let q = currentQuestion {

@@ -140,12 +140,13 @@ struct QuestionListView: View {
                                         
                                         Text(question.content)
                                             .foregroundColor(.black)
-                                            .font(.custom("GmarketSansTTFMedium", size: 18))
+                                            .font(.custom("GmarketSansTTFMedium", size: 16))
+                                            .lineSpacing(8)
                                             .padding(.top, 5)
                                             .padding(.bottom, 5)
 
                                         HStack {
-                                            Text(question.mode == .mentor ? "멘토 모드로부터 추가" : "러너 모드로부터 추가")
+                                            Text(question.mode == .mentor ? "멘토 모드" : "러너 모드")
                                                 .foregroundColor(question.mode == .mentor ? Color(hex: "#F9BF64") : Color(hex: "#F08484"))
                                                 .font(.custom("GmarketSansTTFBold", size: 12))
 

@@ -66,12 +66,17 @@ struct MentorView: View {
 
                     // 3. 질문 내용
                     if let question = currentQuestion {
-                        Text(question.content)
-                            .font(.custom("GmarketSansTTFMedium", size: 20))
-                            .foregroundColor(.black)
-                            .multilineTextAlignment(.leading)
-                            .frame(height: geometry.size.height * 0.20)
-                            .frame(maxWidth: .infinity, alignment: .leading)
+                        VStack {
+                            Text(question.content)
+                                .font(.custom("GmarketSansTTFMedium", size: 20))
+                                .foregroundColor(.black)
+                                .multilineTextAlignment(.leading)
+                                .lineSpacing(8)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(.top, 10)
+                            Spacer()
+                        }
+                        .frame(height: geometry.size.height * 0.20)
                     } else {
                         Text("질문이 없습니다.")
                             .font(.custom("GmarketSansTTFMedium", size: 20))
@@ -79,6 +84,7 @@ struct MentorView: View {
                             .frame(height: geometry.size.height * 0.20)
                             .frame(maxWidth: .infinity, alignment: .center)
                     }
+
 
                     // 4. 별점 및 평가 메시지
                     // 별점 + 평균 + 평가 완료 메시지
