@@ -26,10 +26,10 @@ enum VisibilityFilter: String, CaseIterable, Identifiable {
 }
 
 enum SortOption: String, CaseIterable, Identifiable {
-    case dateDescending = "날짜 내림차순"
-    case dateAscending = "날짜 오름차순"
-    case ratingDescending = "평점 내림차순"
-    case ratingAscending = "평점 오름차순"
+    case dateDescending = "최신순"
+    case dateAscending = "오래된순"
+    case ratingDescending = "평 높은순"
+    case ratingAscending = "평 낮은순"
     
     var id: String { self.rawValue }
 }
@@ -83,41 +83,95 @@ struct QuestionListView: View {
                 VStack(alignment: .leading, spacing: 16) {
                     
                     // 🔹 필터 영역
-                    VStack(spacing: 8) {
-                        // 첫 줄: 유저 + 제시
-                        HStack {
-                            Text("유저 분류")
-                                .foregroundColor(.black)
-                                .bold()
-                            Picker("", selection: $selectedUser) {
-                                ForEach(UserFilter.allCases) { user in
-                                    Text(user.rawValue).tag(user)
+                    VStack(spacing: 16) {
+                        // 필터 카드들
+                        HStack(spacing: 8) {
+                            // 유저 분류 필터
+                            VStack(alignment: .leading, spacing: 4) {
+                                HStack {
+                                    Image(systemName: "person.2.fill")
+                                        .foregroundColor(.blue)
+                                        .font(.system(size: 12))
+                                    Text("유저 분류")
+                                        .font(.custom("GmarketSansTTFBold", size: 14))
+                                        .foregroundColor(.black)
+                                        .padding(.top, 4)
+                                        .padding(.bottom, 4)
                                 }
+                                Picker("", selection: $selectedUser) {
+                                    ForEach(UserFilter.allCases) { user in
+                                        Text(user.rawValue).tag(user)
+                                    }
+                                }
+                                .pickerStyle(.menu)
+                                .frame(maxWidth: .infinity)
+                                .padding(4)
+                                .background(Color.white.opacity(0.8))
+                                .cornerRadius(8)
                             }
-                            .pickerStyle(.menu)
+                            .frame(maxWidth: .infinity)
+                            .padding(8)
+                            .background(Color.white.opacity(0.9))
+                            .cornerRadius(12)
+                            .shadow(color: .black.opacity(0.1), radius: 2, x: 0, y: 1)
 
-                            Text("제시 여부")
-                                .foregroundColor(.black)
-                                .bold()
-                            Picker("", selection: $selectedVisibility) {
-                                ForEach(VisibilityFilter.allCases) { visibility in
-                                    Text(visibility.rawValue).tag(visibility)
+                            // 제시 여부 필터
+                            VStack(alignment: .leading, spacing: 4) {
+                                HStack {
+                                    Image(systemName: "eye.fill")
+                                        .foregroundColor(.green)
+                                        .font(.system(size: 12))
+                                    Text("제시 여부")
+                                        .font(.custom("GmarketSansTTFBold", size: 14))
+                                        .foregroundColor(.black)
+                                        .padding(.top, 4)
+                                        .padding(.bottom, 4)
                                 }
+                                Picker("", selection: $selectedVisibility) {
+                                    ForEach(VisibilityFilter.allCases) { visibility in
+                                        Text(visibility.rawValue).tag(visibility)
+                                    }
+                                }
+                                .pickerStyle(.menu)
+                                .frame(maxWidth: .infinity)
+                                .padding(4)
+                                .background(Color.white.opacity(0.8))
+                                .cornerRadius(8)
                             }
-                            .pickerStyle(.menu)
-                        }
+                            .frame(maxWidth: .infinity)
+                            .padding(8)
+                            .background(Color.white.opacity(0.9))
+                            .cornerRadius(12)
+                            .shadow(color: .black.opacity(0.1), radius: 2, x: 0, y: 1)
 
-                        // 두 번째 줄: 정렬
-                        HStack {
-                            Text("정렬")
-                                .foregroundColor(.black)
-                                .bold()
-                            Picker("", selection: $selectedSort) {
-                                ForEach(SortOption.allCases) { option in
-                                    Text(option.rawValue).tag(option)
+                            // 정렬 필터
+                            VStack(alignment: .leading, spacing: 4) {
+                                HStack {
+                                    Image(systemName: "arrow.up.arrow.down")
+                                        .foregroundColor(.purple)
+                                        .font(.system(size: 12))
+                                    Text("정렬")
+                                        .font(.custom("GmarketSansTTFBold", size: 14))
+                                        .foregroundColor(.black)
+                                        .padding(.top, 4)
+                                        .padding(.bottom, 4)
                                 }
+                                Picker("", selection: $selectedSort) {
+                                    ForEach(SortOption.allCases) { option in
+                                        Text(option.rawValue).tag(option)
+                                    }
+                                }
+                                .pickerStyle(.menu)
+                                .frame(maxWidth: .infinity)
+                                .padding(4)
+                                .background(Color.white.opacity(0.8))
+                                .cornerRadius(8)
                             }
-                            .pickerStyle(.segmented)
+                            .frame(maxWidth: .infinity)
+                            .padding(8)
+                            .background(Color.white.opacity(0.9))
+                            .cornerRadius(12)
+                            .shadow(color: .black.opacity(0.1), radius: 2, x: 0, y: 1)
                         }
                     }
                     .padding(.horizontal)
@@ -171,7 +225,6 @@ struct QuestionListView: View {
                     Spacer()
                 }
                 .padding(.top)
-                .navigationTitle("전체 질문 목록")
                 .padding(.top, 44)
             }
         }
