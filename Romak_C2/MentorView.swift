@@ -13,7 +13,7 @@ struct MentorView: View {
     @Query private var allQuestions: [Question]
 
     var mentorQuestions: [Question] {
-        allQuestions.filter { $0.mode == .mentor && $0.averageRating > 2.0 }
+        allQuestions.filter { $0.mode == .mentor && $0.averageRating >= 2.0 }
     }
 
     var currentQuestion: Question? {
@@ -287,7 +287,7 @@ struct MentorView: View {
         try? context.save()
 
         // 👉 평균 점수가 2 이하인 경우 Alert + 리프레시
-        if question.averageRating <= 2.0 {
+        if question.averageRating < 2.0 {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                 showHiddenAlert = true
             }

@@ -5,10 +5,6 @@
 //  Created by 준호 on 4/13/25.
 //
 
-//
-//  LearnerView.swift
-//
-
 import SwiftUI
 import SwiftData
 
@@ -17,7 +13,7 @@ struct LearnerView: View {
     @Query private var allQuestions: [Question]
 
     var learnerQuestions: [Question] {
-        allQuestions.filter { $0.mode == .learner }
+        allQuestions.filter { $0.mode == .learner && $0.averageRating >= 2.0}
     }
 
     var currentQuestion: Question? {
@@ -32,7 +28,10 @@ struct LearnerView: View {
     @State private var newQuestionContent = ""
     @State private var showRatedMessage = false
     @State private var isShowingDeleteAlert = false
+    @State private var sliderValue: Double = 0.0
     @State private var tempRating: Double = 0
+    @State private var refreshID = UUID()
+    @State private var showHiddenAlert = false
 
     var body: some View {
         let total = learnerQuestions.count
@@ -209,6 +208,7 @@ struct LearnerView: View {
                 }
             }
         }
+        .id(refreshID)
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button("추가") {
@@ -272,16 +272,30 @@ struct LearnerView: View {
             .padding()
             .presentationDetents([.fraction(0.4)]) // 🔸 시트 높이 늘림
         }
-
+        .alert("점수가 낮아 질문이 제시 되지 않습니다.\n전체 질문 리스트에서 삭제된 질문을 조회할 수 있습니다.", isPresented: $showHiddenAlert) {
+            Button("확인", role: .cancel) {
+                currentIndex = 0
+            }
+        }
     }
 
+    // MARK: - 별점 평가
     private func submitRating(_ stars: Int) {
         guard let question = currentQuestion else { return }
+
         question.ratingHistory.append(Double(stars))
         try? context.save()
-        showRatedMessage = true
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
-            showRatedMessage = false
+
+        // 👉 평균 점수가 2 이하인 경우 Alert + 리프레시
+        if question.averageRating < 2.0 {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                showHiddenAlert = true
+            }
+        } else {
+            showRatedMessage = true
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+                showRatedMessage = false
+            }
         }
     }
 
