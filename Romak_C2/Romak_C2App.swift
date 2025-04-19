@@ -8,12 +8,13 @@
 import SwiftUI
 import SwiftData
 
+// Romak_C2App.swift
 @main
 struct Romak_C2App: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
         }
-        .modelContainer(for: Question.self) // SwiftData 컨테이너 등록
+        .modelContainer(for: Question.self)
     }
 }

@@ -134,7 +134,7 @@ struct QuestionListView: View {
                             VStack(spacing: 12) {
                                 ForEach(filteredQuestions) { question in
                                     VStack(alignment: .leading, spacing: 6) {
-                                        Text(formatDate(question.dateAdded))
+                                        Text(question.isDefault ? "기본 질문" : formatDate(question.dateAdded))
                                             .foregroundColor(.black)
                                             .font(.custom("GmarketSansTTFLight", size: 12))
                                         
@@ -145,9 +145,10 @@ struct QuestionListView: View {
                                             .padding(.bottom, 5)
 
                                         HStack {
-                                            Text("\(question.mode == .mentor ? "멘토" : "러너") 모드로부터 추가")
-                                                .foregroundColor(.gray)
+                                            Text(question.mode == .mentor ? "멘토 모드로부터 추가" : "러너 모드로부터 추가")
+                                                .foregroundColor(question.mode == .mentor ? Color(hex: "#F9BF64") : Color(hex: "#F08484"))
                                                 .font(.custom("GmarketSansTTFBold", size: 12))
+
                                             Spacer()
                                             Text("⭐️ \(question.averageRating, specifier: "%.1f")")
                                                 .font(.custom("GmarketSansTTFBold", size: 12))

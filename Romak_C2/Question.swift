@@ -15,18 +15,20 @@ enum QuestionMode: String, Codable {
 
 @Model
 class Question {
-    @Attribute(.unique) var id: Int
+    var id: Int
     var mode: QuestionMode
     var content: String
     var ratingHistory: [Double]
     var dateAdded: Date
+    var isDefault: Bool // ✅ 기본 질문 여부
 
-    init(id: Int, mode: QuestionMode, content: String, ratingHistory: [Double] = [], dateAdded: Date = Date()) {
+    init(id: Int, mode: QuestionMode, content: String, ratingHistory: [Double], dateAdded: Date = .now, isDefault: Bool = false) {
         self.id = id
         self.mode = mode
         self.content = content
         self.ratingHistory = ratingHistory
         self.dateAdded = dateAdded
+        self.isDefault = isDefault
     }
 
     var averageRating: Double {
@@ -34,3 +36,5 @@ class Question {
         return ratingHistory.reduce(0, +) / Double(ratingHistory.count)
     }
 }
+
+
