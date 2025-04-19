@@ -58,7 +58,9 @@ struct ContentView: View {
                 }
             }
             .alert("앱 이용 안내", isPresented: $showInfoAlert) {
-                Button("확인", role: .cancel) {}
+                Button("확인", role: .cancel) {
+                    
+                }
             } message: {
                 Text("\n1. 멘토와 러너가 대화를 열기 위한 질문들을 각 모드에 들어 가면 확인할 수 있어요.\n\n2. 질문을 평가 했을 때, 평점이 2.0 이하일 경우 화면에서 숨겨집니다.\n\n3. 질문이 최초 생성 되었을 때(기본 질문 포함)는 3.0이 기본 평점으로 설정 됩니다.")
             }

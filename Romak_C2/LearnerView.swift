@@ -272,10 +272,13 @@ struct LearnerView: View {
             .padding()
             .presentationDetents([.fraction(0.4)]) // 🔸 시트 높이 늘림
         }
-        .alert("점수가 낮아 질문이 제시 되지 않습니다.\n전체 질문 리스트에서 삭제된 질문을 조회할 수 있습니다.", isPresented: $showHiddenAlert) {
+        .alert("질문 제외 알림", isPresented: $showHiddenAlert) {
             Button("확인", role: .cancel) {
                 currentIndex = 0
             }
+        } message: {
+                Text("점수가 낮아 질문이 제시 되지 않습니다.\n전체 질문 리스트에서 삭제된 질문을 조회할 수 있습니다.")
+            
         }
     }
 
