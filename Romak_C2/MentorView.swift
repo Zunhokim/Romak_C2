@@ -94,7 +94,7 @@ struct MentorView: View {
                                 HStack(spacing: 4) {
                                     Spacer()
                                     ForEach(1...5, id: \.self) { i in
-                                        Image(systemName: i <= Int(tempRating) ? "star.fill" : "star")
+                                        Image(systemName: i <= Int(tempRating.rounded()) ? "star.fill" : "star")
                                             .resizable()
                                             .frame(width: 30, height: 30)
                                             .foregroundColor(.yellow)
@@ -282,7 +282,7 @@ struct MentorView: View {
         try? context.save()
 
         showRatedMessage = true
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
             showRatedMessage = false
         }
     }
@@ -295,7 +295,7 @@ struct MentorView: View {
             id: Int.random(in: 1000...9999),
             mode: .mentor,
             content: newQuestionContent,
-            ratingHistory: []
+            ratingHistory: [3.0]
         )
 
         context.insert(new)

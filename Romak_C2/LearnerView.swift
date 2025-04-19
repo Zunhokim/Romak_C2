@@ -95,7 +95,7 @@ struct LearnerView: View {
                                 HStack(spacing: 4) {
                                     Spacer()
                                     ForEach(1...5, id: \.self) { i in
-                                        Image(systemName: i <= Int(tempRating) ? "star.fill" : "star")
+                                        Image(systemName: i <= Int(tempRating.rounded()) ? "star.fill" : "star")
                                             .resizable()
                                             .frame(width: 30, height: 30)
                                             .foregroundColor(.yellow)
@@ -280,14 +280,19 @@ struct LearnerView: View {
         question.ratingHistory.append(Double(stars))
         try? context.save()
         showRatedMessage = true
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
             showRatedMessage = false
         }
     }
 
     private func addQuestion() {
         guard !newQuestionContent.trimmingCharacters(in: .whitespaces).isEmpty else { return }
-        let new = Question(id: Int.random(in: 1000...9999), mode: .learner, content: newQuestionContent, ratingHistory: [])
+        let new = Question(
+            id: Int.random(in: 1000...9999),
+            mode: .learner,
+            content: newQuestionContent,
+            ratingHistory: [3.0]
+        )
         context.insert(new)
         try? context.save()
         newQuestionContent = ""
