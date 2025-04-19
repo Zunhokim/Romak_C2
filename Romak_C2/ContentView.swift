@@ -90,7 +90,7 @@ struct  ContentView: View {
         ]
 
         for (i, content) in mentorDefaults.enumerated() {
-            let q = Question(id: 1000 + i, mode: .mentor, content: content, ratingHistory: [], isDefault: true)
+            let q = Question(id: 1000 + i, mode: .mentor, content: content, ratingHistory: [3.0], isDefault: true)
             context.insert(q)
         }
 
@@ -113,7 +113,7 @@ struct  ContentView: View {
         ]
 
         for (i, content) in learnerDefaults.enumerated() {
-            let q = Question(id: 2000 + i, mode: .learner, content: content, ratingHistory: [], isDefault: true)
+            let q = Question(id: 2000 + i, mode: .learner, content: content, ratingHistory: [3.0], isDefault: true)
             context.insert(q)
         }
     }

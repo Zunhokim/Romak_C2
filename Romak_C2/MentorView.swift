@@ -16,10 +16,14 @@ struct MentorView: View {
         allQuestions.filter { $0.mode == .mentor }
     }
 
+    var visibleQuestions: [Question] {
+        mentorQuestions.filter { $0.averageRating >= 2.0 }
+    }
+
     var currentQuestion: Question? {
-        let total = mentorQuestions.count
+        let total = visibleQuestions.count
         guard total > 0, currentIndex < total else { return nil }
-        return mentorQuestions[currentIndex]
+        return visibleQuestions[currentIndex]
     }
 
     @State private var currentIndex: Int = 0
@@ -30,10 +34,11 @@ struct MentorView: View {
     @State private var isShowingDeleteAlert = false
     @State private var sliderValue: Double = 0.0
     @State private var tempRating: Double = 0
-
+    @State private var showLowRatingMessage = false
+    @State private var toastOffset: CGFloat = 1000 // 화면 밖으로 시작
 
     var body: some View {
-        let total = mentorQuestions.count
+        let total = visibleQuestions.count
 
         ZStack {
             Image("PageBG")
@@ -85,9 +90,7 @@ struct MentorView: View {
                             .frame(maxWidth: .infinity, alignment: .center)
                     }
 
-
                     // 4. 별점 및 평가 메시지
-                    // 별점 + 평균 + 평가 완료 메시지
                     if let question = currentQuestion {
                         VStack(spacing: 8) {
                             GeometryReader { geo in
@@ -129,7 +132,6 @@ struct MentorView: View {
                         .frame(height: geometry.size.height * 0.10)
                         .frame(maxWidth: .infinity)
                     }
-
 
                     // 5. 이동 버튼
                     HStack(spacing: 40) {
@@ -206,12 +208,30 @@ struct MentorView: View {
                 .padding()
                 .onAppear {
                     tempRating = currentQuestion?.averageRating ?? 0
+                    checkLowRatingQuestions()
+                }
+            }
+            
+            // 토스트 메시지
+            VStack {
+                Spacer()
+                if showLowRatingMessage {
+                    Text("낮은 평점으로 인해 질문이 제시 되지 않습니다.")
+                        .font(.caption)
+                        .foregroundColor(.white)
+                        .padding(.vertical, 12)
+                        .padding(.horizontal, 20)
+                        .background(Color.black.opacity(0.6))
+                        .cornerRadius(15)
+                        .padding(.bottom, 150)
+                        .transition(.move(edge: .bottom).combined(with: .opacity))
+                        .animation(.easeInOut(duration: 0.3), value: showLowRatingMessage)
                 }
             }
         }
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
-                Button("추가") {
+                Button("Add") {
                     isShowingAddPopup = true
                 }
             }
@@ -272,7 +292,6 @@ struct MentorView: View {
             .padding()
             .presentationDetents([.fraction(0.4)]) // 🔸 시트 높이 늘림
         }
-
     }
 
     // MARK: - 별점 평가
@@ -285,6 +304,37 @@ struct MentorView: View {
         DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
             showRatedMessage = false
         }
+        
+        // 평점이 2.0 미만으로 내려갔는지 확인
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
+            let lowRatingQuestions = mentorQuestions.filter { $0.averageRating < 2.0 }
+            if !lowRatingQuestions.isEmpty {
+                showLowRatingMessage = true
+                // 현재 질문이 마지막 질문이고 평점이 2.0 미만이면 첫 번째 질문으로 이동
+                if currentIndex == visibleQuestions.count - 1 && question.averageRating < 2.0 {
+                    currentIndex = 0
+                    tempRating = currentQuestion?.averageRating ?? 0
+                }
+                // 3초 후에 메시지 숨기기
+                DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+                    showLowRatingMessage = false
+                }
+            }
+        }
+    }
+    
+    // 낮은 평점 질문 확인
+    private func checkLowRatingQuestions() {
+        let lowRatingQuestions = mentorQuestions.filter { $0.averageRating < 2.0 }
+        if !lowRatingQuestions.isEmpty {
+            showLowRatingMessage = true
+            // 3초 후에 메시지 숨기기
+            DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+                showLowRatingMessage = false
+            }
+        } else {
+            showLowRatingMessage = false
+        }
     }
 
     // MARK: - CRUD
@@ -295,13 +345,13 @@ struct MentorView: View {
             id: Int.random(in: 1000...9999),
             mode: .mentor,
             content: newQuestionContent,
-            ratingHistory: []
+            ratingHistory: [3.0] // 기본 평점 3.0으로 설정
         )
 
         context.insert(new)
         try? context.save()
         newQuestionContent = ""
-        currentIndex = mentorQuestions.count - 1
+        currentIndex = visibleQuestions.count - 1
     }
 
     private func deleteCurrentQuestion() {
@@ -309,7 +359,7 @@ struct MentorView: View {
 
         context.delete(question)
         try? context.save()
-        currentIndex = max(0, min(currentIndex, mentorQuestions.count - 2))
+        currentIndex = max(0, min(currentIndex, visibleQuestions.count - 2))
     }
 
     private func updateQuestion() {

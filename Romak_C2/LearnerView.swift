@@ -5,10 +5,6 @@
 //  Created by 준호 on 4/13/25.
 //
 
-//
-//  LearnerView.swift
-//
-
 import SwiftUI
 import SwiftData
 
@@ -20,10 +16,14 @@ struct LearnerView: View {
         allQuestions.filter { $0.mode == .learner }
     }
 
+    var visibleQuestions: [Question] {
+        learnerQuestions.filter { $0.averageRating >= 2.0 }
+    }
+
     var currentQuestion: Question? {
-        let total = learnerQuestions.count
+        let total = visibleQuestions.count
         guard total > 0, currentIndex < total else { return nil }
-        return learnerQuestions[currentIndex]
+        return visibleQuestions[currentIndex]
     }
 
     @State private var currentIndex: Int = 0
@@ -33,9 +33,11 @@ struct LearnerView: View {
     @State private var showRatedMessage = false
     @State private var isShowingDeleteAlert = false
     @State private var tempRating: Double = 0
+    @State private var showLowRatingMessage = false
+    @State private var toastOffset: CGFloat = 1000 // 화면 밖으로 시작
 
     var body: some View {
-        let total = learnerQuestions.count
+        let total = visibleQuestions.count
 
         ZStack {
             Image("PageBG")
@@ -86,7 +88,6 @@ struct LearnerView: View {
                             .frame(height: geometry.size.height * 0.20)
                             .frame(maxWidth: .infinity, alignment: .center)
                     }
-
 
                     // 4. 별점
                     if let question = currentQuestion {
@@ -206,6 +207,24 @@ struct LearnerView: View {
                 .padding()
                 .onAppear {
                     tempRating = currentQuestion?.averageRating ?? 0
+                    checkLowRatingQuestions()
+                }
+            }
+            
+            // 토스트 메시지
+            VStack {
+                Spacer()
+                if showLowRatingMessage {
+                    Text("낮은 평점으로 인해 질문이 제시 되지 않습니다.")
+                        .font(.caption)
+                        .foregroundColor(.white)
+                        .padding(.vertical, 12)
+                        .padding(.horizontal, 20)
+                        .background(Color.black.opacity(0.6))
+                        .cornerRadius(15)
+                        .padding(.bottom, 150)
+                        .transition(.move(edge: .bottom).combined(with: .opacity))
+                        .animation(.easeInOut(duration: 0.3), value: showLowRatingMessage)
                 }
             }
         }
@@ -283,22 +302,58 @@ struct LearnerView: View {
         DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
             showRatedMessage = false
         }
+        
+        // 평점이 2.0 미만으로 내려갔는지 확인
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
+            let lowRatingQuestions = learnerQuestions.filter { $0.averageRating < 2.0 }
+            if !lowRatingQuestions.isEmpty {
+                showLowRatingMessage = true
+                // 현재 질문이 마지막 질문이고 평점이 2.0 미만이면 첫 번째 질문으로 이동
+                if currentIndex == visibleQuestions.count - 1 && question.averageRating < 2.0 {
+                    currentIndex = 0
+                    tempRating = currentQuestion?.averageRating ?? 0
+                }
+                // 3초 후에 메시지 숨기기
+                DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+                    showLowRatingMessage = false
+                }
+            }
+        }
+    }
+    
+    // 낮은 평점 질문 확인
+    private func checkLowRatingQuestions() {
+        let lowRatingQuestions = learnerQuestions.filter { $0.averageRating < 2.0 }
+        if !lowRatingQuestions.isEmpty {
+            showLowRatingMessage = true
+            // 3초 후에 메시지 숨기기
+            DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+                showLowRatingMessage = false
+            }
+        } else {
+            showLowRatingMessage = false
+        }
     }
 
     private func addQuestion() {
         guard !newQuestionContent.trimmingCharacters(in: .whitespaces).isEmpty else { return }
-        let new = Question(id: Int.random(in: 1000...9999), mode: .learner, content: newQuestionContent, ratingHistory: [])
+        let new = Question(
+            id: Int.random(in: 1000...9999),
+            mode: .learner,
+            content: newQuestionContent,
+            ratingHistory: [3.0] // 기본 평점 3.0으로 설정
+        )
         context.insert(new)
         try? context.save()
         newQuestionContent = ""
-        currentIndex = learnerQuestions.count - 1
+        currentIndex = visibleQuestions.count - 1
     }
 
     private func deleteCurrentQuestion() {
         guard let question = currentQuestion else { return }
         context.delete(question)
         try? context.save()
-        currentIndex = max(0, min(currentIndex, learnerQuestions.count - 2))
+        currentIndex = max(0, min(currentIndex, visibleQuestions.count - 2))
     }
 
     private func updateQuestion() {
