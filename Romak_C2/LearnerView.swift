@@ -225,15 +225,21 @@ struct LearnerView: View {
                 newQuestionContent = ""
             }
         })) {
-            VStack(spacing: 20) {
+            VStack(spacing: 24) {
                 Text(isEditing ? "질문 수정" : "새 질문 추가")
-                    .font(.headline)
+                    .font(.custom("GmarketSansTTFBold", size: 18))
+                    .padding(.top, 10)
 
-                TextField("질문 내용을 입력하세요", text: $newQuestionContent)
-                    .textFieldStyle(.roundedBorder)
+                TextEditor(text: $newQuestionContent)
+                    .frame(height: 100)
+                    .padding(4)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 8)
+                            .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                    )
                     .padding(.horizontal)
 
-                HStack {
+                HStack(spacing: 20) {
                     Button("취소", role: .cancel) {
                         isShowingAddPopup = false
                         isEditing = false
@@ -241,8 +247,8 @@ struct LearnerView: View {
                     }
                     .padding(.horizontal, 20)
                     .padding(.vertical, 10)
-                    .background(Color.accentColor)
-                    .foregroundColor(.white)
+                    .background(Color.gray.opacity(0.3))
+                    .foregroundColor(.black)
                     .cornerRadius(8)
 
                     Button(isEditing ? "수정" : "추가") {
@@ -260,10 +266,13 @@ struct LearnerView: View {
                     .foregroundColor(.white)
                     .cornerRadius(8)
                 }
+
+                Spacer()
             }
             .padding()
-            .presentationDetents([.height(200)])
+            .presentationDetents([.fraction(0.4)]) // 🔸 시트 높이 늘림
         }
+
     }
 
     private func submitRating(_ stars: Int) {
