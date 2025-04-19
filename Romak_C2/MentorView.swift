@@ -28,6 +28,9 @@ struct MentorView: View {
     @State private var newQuestionContent = ""
     @State private var showRatedMessage = false
     @State private var isShowingDeleteAlert = false
+    @State private var sliderValue: Double = 0.0
+    @State private var tempRating: Double = 0
+
 
     var body: some View {
         let total = mentorQuestions.count
@@ -41,28 +44,27 @@ struct MentorView: View {
 
             GeometryReader { geometry in
                 VStack(spacing: 0) {
-
-                    // 1. 질문 번호 표시 (20%)
+                    // 1. 질문 번호 표시
                     Text("Mentor Mode")
                         .font(.custom("Lemon-Regular", size: 28))
                         .foregroundColor(.black)
                         .frame(height: geometry.size.height * 0.20)
                         .frame(maxWidth: .infinity, alignment: .center)
-                    
+
                     Text("\(currentIndex + 1) / \(total)")
                         .font(.headline)
                         .foregroundColor(.black)
                         .frame(height: geometry.size.height * 0.05)
                         .frame(maxWidth: .infinity, alignment: .center)
 
-                    // 2. 제목 (5%)
+                    // 2. 제목
                     Text("Question!")
                         .font(.custom("GmarketSansTTFBold", size: 24))
                         .foregroundColor(.black)
                         .frame(height: geometry.size.height * 0.05)
                         .frame(maxWidth: .infinity, alignment: .leading)
 
-                    // 3. 질문 내용 (30%)
+                    // 3. 질문 내용
                     if let question = currentQuestion {
                         Text(question.content)
                             .font(.custom("GmarketSansTTFMedium", size: 20))
@@ -78,27 +80,43 @@ struct MentorView: View {
                             .frame(maxWidth: .infinity, alignment: .center)
                     }
 
-                    // 4. 별점 및 평가 메시지 (20%)
+                    // 4. 별점 및 평가 메시지
+                    // 별점 + 평균 + 평가 완료 메시지
                     if let question = currentQuestion {
                         VStack(spacing: 8) {
-                            HStack(spacing: 4) {
-                                ForEach(1...5, id: \.self) { i in
-                                    Image(systemName: i <= Int(question.averageRating.rounded()) ? "star.fill" : "star")
-                                        .foregroundColor(.yellow)
-                                        .onTapGesture {
-                                            submitRating(i)
-                                        }
+                            GeometryReader { geo in
+                                HStack(spacing: 4) {
+                                    Spacer()
+                                    ForEach(1...5, id: \.self) { i in
+                                        Image(systemName: i <= Int(tempRating) ? "star.fill" : "star")
+                                            .resizable()
+                                            .frame(width: 30, height: 30)
+                                            .foregroundColor(.yellow)
+                                    }
+                                    Spacer()
                                 }
+                                .contentShape(Rectangle()) // 전체 HStack이 드래그 영역이 되도록
+                                .gesture(
+                                    DragGesture(minimumDistance: 0)
+                                        .onChanged { value in
+                                            let widthPerStar = geo.size.width / 5
+                                            let newRating = min(5, max(1, Int(value.location.x / widthPerStar) + 1))
+                                            tempRating = Double(newRating)
+                                        }
+                                        .onEnded { _ in
+                                            submitRating(Int(tempRating))
+                                        }
+                                )
                             }
-                            .font(.title)
+                            .frame(height: 40)
 
                             Text("\(question.averageRating, specifier: "%.1f")점")
-                                .font(.subheadline)
+                                .font(.custom("GmarketSansTTFBold", size: 14))
                                 .foregroundColor(.black)
 
                             if showRatedMessage {
                                 Text("평가 완료!")
-                                    .font(.caption)
+                                    .font(.custom("GmarketSansTTFBold", size: 14))
                                     .foregroundColor(.green)
                             }
                         }
@@ -106,10 +124,12 @@ struct MentorView: View {
                         .frame(maxWidth: .infinity)
                     }
 
-                    // 5. 이동 버튼 (15%)
+
+                    // 5. 이동 버튼
                     HStack(spacing: 40) {
                         Button(action: {
                             currentIndex = (currentIndex - 1 + total) % total
+                            tempRating = currentQuestion?.averageRating ?? 0
                         }) {
                             RoundedRectangle(cornerRadius: 20)
                                 .fill(total == 0 ? Color.gray.opacity(0.4) : Color(hex: "#FBF6A4"))
@@ -124,6 +144,7 @@ struct MentorView: View {
 
                         Button(action: {
                             currentIndex = (currentIndex + 1) % total
+                            tempRating = currentQuestion?.averageRating ?? 0
                         }) {
                             RoundedRectangle(cornerRadius: 20)
                                 .fill(total == 0 ? Color.gray.opacity(0.4) : Color(hex: "F08484"))
@@ -138,7 +159,7 @@ struct MentorView: View {
                     }
                     .frame(height: geometry.size.height * 0.15)
 
-                    // 6. 수정/삭제 버튼 (10%)
+                    // 6. 수정/삭제 버튼
                     HStack {
                         Button(action: {
                             if let q = currentQuestion {
@@ -177,15 +198,14 @@ struct MentorView: View {
                     .frame(height: geometry.size.height * 0.25)
                 }
                 .padding()
+                .onAppear {
+                    tempRating = currentQuestion?.averageRating ?? 0
+                }
             }
-
-
         }
-
-        
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
-                Button("추가") {
+                Button("Add") {
                     isShowingAddPopup = true
                 }
             }

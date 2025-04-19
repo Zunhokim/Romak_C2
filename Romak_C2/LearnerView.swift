@@ -32,6 +32,7 @@ struct LearnerView: View {
     @State private var newQuestionContent = ""
     @State private var showRatedMessage = false
     @State private var isShowingDeleteAlert = false
+    @State private var tempRating: Double = 0
 
     var body: some View {
         let total = learnerQuestions.count
@@ -45,7 +46,6 @@ struct LearnerView: View {
 
             GeometryReader { geometry in
                 VStack(spacing: 0) {
-
                     // 1. 상단 타이틀 (20%)
                     Text("Learner Mode")
                         .font(.custom("Lemon-Regular", size: 28))
@@ -82,27 +82,42 @@ struct LearnerView: View {
                             .frame(maxWidth: .infinity, alignment: .center)
                     }
 
-                    // 4. 별점 및 메시지 (20%)
+                    // 4. 별점 (20%)
                     if let question = currentQuestion {
                         VStack(spacing: 8) {
-                            HStack(spacing: 4) {
-                                ForEach(1...5, id: \.self) { i in
-                                    Image(systemName: i <= Int(question.averageRating.rounded()) ? "star.fill" : "star")
-                                        .foregroundColor(.yellow)
-                                        .onTapGesture {
-                                            submitRating(i)
-                                        }
+                            GeometryReader { geo in
+                                HStack(spacing: 4) {
+                                    Spacer()
+                                    ForEach(1...5, id: \.self) { i in
+                                        Image(systemName: i <= Int(tempRating) ? "star.fill" : "star")
+                                            .resizable()
+                                            .frame(width: 30, height: 30)
+                                            .foregroundColor(.yellow)
+                                    }
+                                    Spacer()
                                 }
+                                .contentShape(Rectangle())
+                                .gesture(
+                                    DragGesture(minimumDistance: 0)
+                                        .onChanged { value in
+                                            let widthPerStar = geo.size.width / 5
+                                            let newRating = min(5, max(1, Int(value.location.x / widthPerStar) + 1))
+                                            tempRating = Double(newRating)
+                                        }
+                                        .onEnded { _ in
+                                            submitRating(Int(tempRating))
+                                        }
+                                )
                             }
-                            .font(.title)
+                            .frame(height: 40)
 
                             Text("\(question.averageRating, specifier: "%.1f")점")
-                                .font(.subheadline)
+                                .font(.custom("GmarketSansTTFBold", size: 14))
                                 .foregroundColor(.black)
 
                             if showRatedMessage {
                                 Text("평가 완료!")
-                                    .font(.caption)
+                                    .font(.custom("GmarketSansTTFBold", size: 14))
                                     .foregroundColor(.green)
                             }
                         }
@@ -114,6 +129,7 @@ struct LearnerView: View {
                     HStack(spacing: 40) {
                         Button(action: {
                             currentIndex = (currentIndex - 1 + total) % total
+                            tempRating = currentQuestion?.averageRating ?? 0
                         }) {
                             RoundedRectangle(cornerRadius: 20)
                                 .fill(total == 0 ? Color.gray.opacity(0.4) : Color(hex: "#FBF6A4"))
@@ -128,6 +144,7 @@ struct LearnerView: View {
 
                         Button(action: {
                             currentIndex = (currentIndex + 1) % total
+                            tempRating = currentQuestion?.averageRating ?? 0
                         }) {
                             RoundedRectangle(cornerRadius: 20)
                                 .fill(total == 0 ? Color.gray.opacity(0.4) : Color(hex: "F08484"))
@@ -181,6 +198,9 @@ struct LearnerView: View {
                     .frame(height: geometry.size.height * 0.25)
                 }
                 .padding()
+                .onAppear {
+                    tempRating = currentQuestion?.averageRating ?? 0
+                }
             }
         }
         .toolbar {
@@ -240,29 +260,19 @@ struct LearnerView: View {
         }
     }
 
-    // 별점 평가
     private func submitRating(_ stars: Int) {
         guard let question = currentQuestion else { return }
         question.ratingHistory.append(Double(stars))
         try? context.save()
-
         showRatedMessage = true
         DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
             showRatedMessage = false
         }
     }
 
-    // CRUD
     private func addQuestion() {
         guard !newQuestionContent.trimmingCharacters(in: .whitespaces).isEmpty else { return }
-
-        let new = Question(
-            id: Int.random(in: 1000...9999),
-            mode: .learner, // ✅ learner 모드로 저장
-            content: newQuestionContent,
-            ratingHistory: []
-        )
-
+        let new = Question(id: Int.random(in: 1000...9999), mode: .learner, content: newQuestionContent, ratingHistory: [])
         context.insert(new)
         try? context.save()
         newQuestionContent = ""
@@ -271,7 +281,6 @@ struct LearnerView: View {
 
     private func deleteCurrentQuestion() {
         guard let question = currentQuestion else { return }
-
         context.delete(question)
         try? context.save()
         currentIndex = max(0, min(currentIndex, learnerQuestions.count - 2))
