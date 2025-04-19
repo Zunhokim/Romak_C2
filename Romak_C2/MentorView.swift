@@ -211,7 +211,7 @@ struct MentorView: View {
         }
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
-                Button("추가") {
+                Button("Add") {
                     isShowingAddPopup = true
                 }
             }
