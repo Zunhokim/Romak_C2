@@ -13,7 +13,7 @@ struct MentorView: View {
     @Query private var allQuestions: [Question]
 
     var mentorQuestions: [Question] {
-        allQuestions.filter { $0.mode == .mentor }
+        allQuestions.filter { $0.mode == .mentor && $0.averageRating > 2.0 }
     }
 
     var currentQuestion: Question? {
@@ -30,7 +30,8 @@ struct MentorView: View {
     @State private var isShowingDeleteAlert = false
     @State private var sliderValue: Double = 0.0
     @State private var tempRating: Double = 0
-
+    @State private var refreshID = UUID()
+    @State private var showHiddenAlert = false
 
     var body: some View {
         let total = mentorQuestions.count
@@ -85,9 +86,7 @@ struct MentorView: View {
                             .frame(maxWidth: .infinity, alignment: .center)
                     }
 
-
                     // 4. 별점 및 평가 메시지
-                    // 별점 + 평균 + 평가 완료 메시지
                     if let question = currentQuestion {
                         VStack(spacing: 8) {
                             GeometryReader { geo in
@@ -101,7 +100,7 @@ struct MentorView: View {
                                     }
                                     Spacer()
                                 }
-                                .contentShape(Rectangle()) // 전체 HStack이 드래그 영역이 되도록
+                                .contentShape(Rectangle())
                                 .gesture(
                                     DragGesture(minimumDistance: 0)
                                         .onChanged { value in
@@ -129,7 +128,6 @@ struct MentorView: View {
                         .frame(height: geometry.size.height * 0.10)
                         .frame(maxWidth: .infinity)
                     }
-
 
                     // 5. 이동 버튼
                     HStack(spacing: 40) {
@@ -193,11 +191,12 @@ struct MentorView: View {
                                 .clipShape(Circle())
                         }
                         .disabled(currentQuestion == nil)
-                        .alert("정말 이 질문을 삭제할까요?\n삭제된 질문은 복구되지 않습니다!", isPresented: $isShowingDeleteAlert) {
-                            Button("삭제", role: .destructive) {
-                                deleteCurrentQuestion()
+                        .alert("점수가 낮아 제시 되는 질문에서 제외 됩니다.\n전체 질문 리스트에서 삭제된 질문을 조회할 수 있습니다.",
+                               isPresented: $showHiddenAlert) {
+                            Button("확인", role: .cancel) {
+                                refreshID = UUID() // ✅ 새 UUID로 뷰 전체 새로고침
+                                currentIndex = 0
                             }
-                            Button("취소", role: .cancel) {}
                         }
                     }
                     .padding(.horizontal)
@@ -209,6 +208,7 @@ struct MentorView: View {
                 }
             }
         }
+        .id(refreshID)
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button("추가") {
@@ -270,22 +270,35 @@ struct MentorView: View {
                 Spacer()
             }
             .padding()
-            .presentationDetents([.fraction(0.4)]) // 🔸 시트 높이 늘림
+            .presentationDetents([.fraction(0.4)])
         }
-
+        .alert("점수가 낮아 제시 되는 질문에서 제외 됩니다.\n전체 질문 리스트에서 삭제된 질문을 조회할 수 있습니다.", isPresented: $showHiddenAlert) {
+            Button("확인", role: .cancel) {
+                currentIndex = 0
+            }
+        }
     }
 
     // MARK: - 별점 평가
     private func submitRating(_ stars: Int) {
         guard let question = currentQuestion else { return }
+
         question.ratingHistory.append(Double(stars))
         try? context.save()
 
-        showRatedMessage = true
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
-            showRatedMessage = false
+        // 👉 평균 점수가 2 이하인 경우 Alert + 리프레시
+        if question.averageRating <= 2.0 {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                showHiddenAlert = true
+            }
+        } else {
+            showRatedMessage = true
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+                showRatedMessage = false
+            }
         }
     }
+
 
     // MARK: - CRUD
     private func addQuestion() {
