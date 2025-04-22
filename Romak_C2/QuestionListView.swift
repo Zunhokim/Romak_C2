@@ -137,7 +137,6 @@ struct QuestionListView: View {
                     }
                     .padding(.horizontal)
                     .padding(.top, 12)
-                    .padding(.bottom, 8)
 
                     // 🔹 리스트
                     if filteredQuestions.isEmpty {
@@ -195,6 +194,7 @@ struct QuestionListView: View {
                                     }
                                 }
                                 .padding(.top, 4)
+                                .padding(.bottom, 40)
                             }
                         }
                     }
