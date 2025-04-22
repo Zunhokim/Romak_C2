@@ -86,32 +86,39 @@ struct MentorView: View {
                             .frame(maxWidth: .infinity, alignment: .center)
                     }
 
-                    // 4. 별점 및 평가 메시지
+                    // 4. 별점
                     if let question = currentQuestion {
                         VStack(spacing: 8) {
                             GeometryReader { geo in
                                 HStack(spacing: 4) {
                                     Spacer()
-                                    ForEach(1...5, id: \.self) { i in
-                                        Image(systemName: i <= Int(tempRating.rounded()) ? "star.fill" : "star")
-                                            .resizable()
-                                            .frame(width: 30, height: 30)
-                                            .foregroundColor(.yellow)
+                                    
+                                    let widthPerStar: CGFloat = 30 + 4 // 별 + 간격 기준
+
+                                    HStack(spacing: 4) {
+                                        ForEach(1...5, id: \.self) { i in
+                                            Image(systemName: i <= Int(tempRating.rounded()) ? "star.fill" : "star")
+                                                .resizable()
+                                                .frame(width: 30, height: 30)
+                                                .foregroundColor(.yellow)
+                                        }
                                     }
+                                    .contentShape(Rectangle()) // 여기까지만 터치 영역으로 설정
+                                    .gesture(
+                                        DragGesture(minimumDistance: 0)
+                                            .onChanged { value in
+                                                let totalWidth = widthPerStar * 5
+                                                let x = min(max(0, value.location.x), totalWidth)
+                                                let newRating = Int(x / widthPerStar)
+                                                tempRating = Double(newRating)
+                                            }
+                                            .onEnded { _ in
+                                                submitRating(Int(tempRating))
+                                            }
+                                    )
+
                                     Spacer()
                                 }
-                                .contentShape(Rectangle())
-                                .gesture(
-                                    DragGesture(minimumDistance: 0)
-                                        .onChanged { value in
-                                            let widthPerStar = geo.size.width / 5
-                                            let newRating = min(5, max(1, Int(value.location.x / widthPerStar) + 1))
-                                            tempRating = Double(newRating)
-                                        }
-                                        .onEnded { _ in
-                                            submitRating(Int(tempRating))
-                                        }
-                                )
                             }
                             .frame(height: 40)
 
@@ -191,12 +198,11 @@ struct MentorView: View {
                                 .clipShape(Circle())
                         }
                         .disabled(currentQuestion == nil)
-                        .alert("점수가 낮아 제시 되는 질문에서 제외 됩니다.\n전체 질문 리스트에서 삭제된 질문을 조회할 수 있습니다.",
-                               isPresented: $showHiddenAlert) {
-                            Button("확인", role: .cancel) {
-                                refreshID = UUID() // ✅ 새 UUID로 뷰 전체 새로고침
-                                currentIndex = 0
+                        .alert("정말 이 질문을 삭제할까요?\n삭제된 질문은 복구되지 않습니다!", isPresented: $isShowingDeleteAlert) {
+                            Button("삭제", role: .destructive) {
+                                deleteCurrentQuestion()
                             }
+                            Button("취소", role: .cancel) {}
                         }
                     }
                     .padding(.horizontal)

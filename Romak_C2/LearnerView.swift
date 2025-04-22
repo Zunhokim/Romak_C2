@@ -93,26 +93,33 @@ struct LearnerView: View {
                             GeometryReader { geo in
                                 HStack(spacing: 4) {
                                     Spacer()
-                                    ForEach(1...5, id: \.self) { i in
-                                        Image(systemName: i <= Int(tempRating.rounded()) ? "star.fill" : "star")
-                                            .resizable()
-                                            .frame(width: 30, height: 30)
-                                            .foregroundColor(.yellow)
+                                    
+                                    let widthPerStar: CGFloat = 30 + 4 // 별 + 간격 기준
+
+                                    HStack(spacing: 4) {
+                                        ForEach(1...5, id: \.self) { i in
+                                            Image(systemName: i <= Int(tempRating.rounded()) ? "star.fill" : "star")
+                                                .resizable()
+                                                .frame(width: 30, height: 30)
+                                                .foregroundColor(.yellow)
+                                        }
                                     }
+                                    .contentShape(Rectangle()) // 여기까지만 터치 영역으로 설정
+                                    .gesture(
+                                        DragGesture(minimumDistance: 0)
+                                            .onChanged { value in
+                                                let totalWidth = widthPerStar * 5
+                                                let x = min(max(0, value.location.x), totalWidth)
+                                                let newRating = Int(x / widthPerStar)
+                                                tempRating = Double(newRating)
+                                            }
+                                            .onEnded { _ in
+                                                submitRating(Int(tempRating))
+                                            }
+                                    )
+
                                     Spacer()
                                 }
-                                .contentShape(Rectangle())
-                                .gesture(
-                                    DragGesture(minimumDistance: 0)
-                                        .onChanged { value in
-                                            let widthPerStar = geo.size.width / 5
-                                            let newRating = min(5, max(1, Int(value.location.x / widthPerStar) + 1))
-                                            tempRating = Double(newRating)
-                                        }
-                                        .onEnded { _ in
-                                            submitRating(Int(tempRating))
-                                        }
-                                )
                             }
                             .frame(height: 40)
 
@@ -129,6 +136,7 @@ struct LearnerView: View {
                         .frame(height: geometry.size.height * 0.10)
                         .frame(maxWidth: .infinity)
                     }
+
 
                     // 5. 이동 버튼
                     HStack(spacing: 40) {
